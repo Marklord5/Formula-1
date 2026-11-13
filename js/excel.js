@@ -119,14 +119,18 @@ function titleRows(g, heads, h) {
 
 function readRows(g, h, end) {
   const rows = [];
+  const qtyCol = g[h.r].findIndex((v, c) => c >= h.s && c <= h.e && /^CANTIDAD$/.test(norm(v)));
   let gap = 0;
   for (let r = h.r + 1; r < end; r++) {
     const cells = g[r].slice(h.s, h.e + 1);
     if (cells.every(nothing)) { if (++gap >= MAX_GAP) break; continue; }
     gap = 0;
     if (cells.some(v => typeof v === 'string' && /^TOTAL/.test(norm(v)))) return { rows, total: g[r] };
-    // Filas sin texto en una columna con encabezado son restos de fórmulas, no movimientos
-    if (cells.some((v, i) => isText(v) && !blank(g[h.r][h.s + i]))) rows.push(g[r]);
+    // Filas sin texto en una columna con encabezado son restos de fórmulas, no movimientos…
+    // …salvo que traigan CANTIDAD > 0: es una entrega a la que no se le capturó el solicitante
+    // ("Columna1", "Columna2"… son nombres automáticos de Excel, no cuentan como encabezado)
+    const hasText = cells.some((v, i) => isText(v) && !/^(COLUMNA\d*)?$/.test(norm(g[h.r][h.s + i])));
+    if (hasText || (qtyCol >= 0 && num(g[r][qtyCol]) > 0)) rows.push(g[r]);
   }
   return { rows, total: null };
 }

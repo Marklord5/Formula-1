@@ -24,7 +24,7 @@ function highlight(text, q) {
 /* ---------- tarjetas de hoja ---------- */
 
 function sheetSummary(sheet, isReturns) {
-  let prod = 0, extra = 0, ent = 0, bod = 0, dev = 0, rows = 0, ranges = 0;
+  let prod = 0, extra = 0, ent = 0, bod = 0, dev = 0, rows = 0, ranges = 0, outflow = false;
   for (const table of sheet.tables) {
     rows += table.rows.length;
     const qtyCol = table.cols.find(c => norm(c.name) === 'CANTIDAD'), solCol = colOf(table, /^SOLICITANTE$/);
@@ -38,12 +38,14 @@ function sheetSummary(sheet, isReturns) {
     // Tabla de folios (FOLIO INICIAL / FINAL sin entregas): cuenta rangos, no entregas
     if (!deliveredCol && colOf(table, /^FOLIO INICIAL$/)) ranges += table.rows.length;
     if (!deliveredCol || !(prodCol || table.meta.nums.length)) continue; // solo bloques con cantidad producida
+    // Sin TOTAL ACREDITACIONES (Corte Diario) la CANTIDAD es lo que salió de bodega, no lo acreditado
+    if (deliveredCol === qtyCol) outflow = true;
     for (const r of table.rows) {
       const v = num(r[deliveredCol.c]) || 0;
       if (solCol && isWarehouse(r[solCol.c])) bod += v; else ent += v;
     }
   }
-  return { prod, extra, ent, bod, dev, rows, ranges, blocks: sheet.tables.length };
+  return { prod, extra, ent, bod, dev, rows, ranges, outflow, blocks: sheet.tables.length };
 }
 
 // Cifra principal de la tarjeta según lo que tenga la hoja
@@ -56,7 +58,7 @@ function headline(sheet, s) {
   }
   if (s.dev) return { value: s.dev, unit: 'devueltos', detail: plural(s.rows, 'registro') };
   if (s.ent && s.prod) return {
-    value: s.ent, unit: 'entregadas', share: Math.min(100, s.ent / s.prod * 100),
+    value: s.ent, unit: s.outflow ? 'salieron de bodega' : 'entregadas', share: Math.min(100, s.ent / s.prod * 100),
     detail: `${pct(s.ent, s.prod)} de ${fmt(s.prod)} producidas${s.bod ? ` · ${fmt(s.bod)} en bodega (no acreditadas)` : ''}`
   };
   if (s.ranges) return { value: s.ranges, unit: 'rangos de folios', detail: 'Folio inicial y final de cada categoría' };

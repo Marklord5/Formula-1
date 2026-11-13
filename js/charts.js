@@ -48,10 +48,10 @@ function columns(points, containerWidth) {
   const hit = p => {
     const d = new Date(p.t);
     return `<rect class="col-hit" x="${x(p.t) - slot / 2}" y="${T}" width="${slot}" height="${H - T - B}"
-      ${tipAttr(`<b>${weekday(d)} ${shortDate(d)}</b>${tipRow('Entregadas ese día', fmt(p.v))}${tipRow('Movimientos', p.n)}`)}/>`;
+      ${tipAttr(`<b>${weekday(d)} ${shortDate(d)}</b>${tipRow('Salieron ese día', fmt(p.v))}${tipRow('Movimientos', p.n)}`)}/>`;
   };
 
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Acreditaciones entregadas por día">
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Folios que salieron de bodega por día">
     <g class="axis">${yAxis(yMax, step, y, L, W - R)}${xAxis(t0, days, x, W, H)}</g>
     ${points.map(bar).join('')}
     <text class="peak-label" x="${x(peak.t)}" y="${y(peak.v) - 8}" text-anchor="middle">${fmt(peak.v)}</text>
@@ -104,7 +104,7 @@ export function curveHtml(points, containerWidth) {
       <line class="guide" x1="${xs[i]}" x2="${xs[i]}" y1="${T}" y2="${y(0)}"/><circle class="hover-dot" cx="${xs[i]}" cy="${y(p.total)}" r="5"/></g>`;
   };
 
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Folios entregados acumulados por fecha">
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Folios que salieron de bodega, acumulados por fecha">
     <defs><linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-opacity=".28"/><stop offset="1" stop-opacity="0"/></linearGradient></defs>
     <g class="axis">${yAxis(yMax, step, y, L, W - R)}${xAxis(first.t, days, x, W, H)}</g>
     <path class="curve-area" d="${line}L${x(last.t)},${y(0)}L${x(first.t)},${y(0)}Z"/>
@@ -186,13 +186,13 @@ function dailyCharts(book, { width }) {
   }
   const top = Object.values(bySolicitor).sort((a, b) => b.v - a.v).slice(0, 10);
 
-  return card('Acreditaciones entregadas por día',
-      `Suma de la columna CANTIDAD de todas las hojas, agrupada por FECHA. No cuenta las filas de BODEGA (se quedaron en bodega, no se acreditaron). En total se entregaron <b>${fmt(total)}</b>.`,
+  return card('Salidas de bodega por día',
+      `Suma de la columna CANTIDAD de todas las hojas, agrupada por FECHA: folios que salieron de bodega hacia módulos o solicitantes. No es lo mismo que acreditado: lo que sobró en los módulos el Corte Final lo cuenta como sobrante módulo. No cuenta las filas de BODEGA. En total salieron <b>${fmt(total)}</b>.`,
       `<div class="chart">${columns(dailyPoints(book), width)}</div>`, '', 'wide') +
-    card('¿Quién recibió más?', 'Los 10 solicitantes o módulos con más acreditaciones entregadas.',
+    card('¿Quién recibió más?', 'Los 10 solicitantes o módulos que más folios recibieron de bodega.',
       hbars(top.map(s => ({
         label: s.label, value: fmt(s.v), segs: [{ v: s.v, tone: 'ent' }],
-        tip: `<b>${esc(s.label)}</b>${tipRow('Entregadas', fmt(s.v))}${tipRow('Movimientos', s.n)}${tipRow('Del total', pct(s.v, total))}`
+        tip: `<b>${esc(s.label)}</b>${tipRow('Recibidos', fmt(s.v))}${tipRow('Movimientos', s.n)}${tipRow('Del total', pct(s.v, total))}`
       }))), '', 'wide');
 }
 
