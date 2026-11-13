@@ -3,11 +3,19 @@
 Reporte web de una sola página (`index.html`) que lee **directamente los Excel** de la carpeta `data/` cada vez que se abre. No hay que compilar nada.
 
 ```
-index.html               ← el reporte
+index.html               ← estructura de la página (HTML + plantillas)
+css/styles.css           ← todo el estilo
+js/config.js             ← archivos, tipos de acreditación y glosario (lo único que se ajusta)
+js/main.js               ← carga de los Excel, estado y eventos
+js/excel.js              ← lectura de hojas y tablas; reglas de BODEGA y extras
+js/overview.js           ← totales, resumen por tipo y pestañas
+js/charts.js             ← gráficas de cada Excel
+js/sheets.js             ← tarjetas de hoja, búsqueda y desglose
+js/utils.js              ← formato, fechas y helpers del DOM
 data/corte-final.xlsx    ← CORTE FINAL F1-2026
 data/corte-diario.xlsx   ← CORTE DIARIO DE ACREDITACIONES 2026
 data/devolucion.xlsx     ← DEVOLUCIÓN F1 2026
-vendor/xlsx.full.min.js  ← lector de Excel de respaldo (si el CDN no responde)
+vendor/xlsx.full.min.js  ← lector de Excel (SheetJS)
 ```
 
 ## Publicar en GitHub Pages
@@ -24,30 +32,35 @@ vendor/xlsx.full.min.js  ← lector de Excel de respaldo (si el CDN no responde)
 2. `git add data && git commit -m "Actualiza corte" && git push`
 3. Recarga la página. Siempre lee la versión más reciente (no usa caché).
 
-Para **probar Excel nuevos sin subirlos**, usa el botón **Cargar Excel** en la página y elige uno o varios archivos: detecta solo cuál es cuál (corte final, diario o devolución) y redibuja todo. No modifica nada en el repositorio.
-
 ## Ver en local
 
 Da doble clic en **`Abrir reporte.command`**: levanta un servidor local y abre el reporte en `http://localhost:8765`, leyendo los Excel de `data/` automáticamente. Para detenerlo, cierra la ventana de Terminal.
 
 (Si abres `index.html` directo con doble clic, el navegador bloquea la lectura de `data/` y la página te indica usar el lanzador.)
 
-## Qué toma de cada Excel
+## Cómo está organizada la página
 
-| Sección | Fuente |
-|---|---|
-| KPIs, utilización, tabla consolidada, dona | `corte-final.xlsx` → tabla CATEGORIA / PRODUCIDO / … / TOTAL SOBRANTE |
-| Columna de folios | `corte-final.xlsx` → hojas FOLIOS OPERACION y FOLIOS STAFF HOSPITALIDADES |
-| Genéricos activados | `corte-final.xlsx` → bloque GÉNERICOS ACTIVADOS |
-| Curva acumulada, módulos, últimos movimientos | `corte-diario.xlsx` → todos los bloques SOLICITANTE / FECHA / CANTIDAD de todas las hojas (sin las filas de BODEGA) |
-| Devoluciones | `devolucion.xlsx` → todas las hojas con CANTIDAD y CATEGORIA o TIPO DE BRAZALETE |
+1. **Totales** arriba: PRODUCIDO, TOTAL ACREDITACIONES y TOTAL SOBRANTE (suma de esas columnas del Corte Final) y Devueltos (suma de CANTIDAD del Excel de devolución).
+2. **Por tipo de acreditación**: el Corte Final separado en Montaje y Desmontaje, Hospitalidades y Operación.
+3. **Paso 1 · Elige el Excel**: Corte Final, Corte Diario o Devolución.
+4. **Paso 2 · Gráficas** del Excel elegido:
+   - Corte Final → entregado vs sobrante, total y por categoría (agrupadas por tipo).
+   - Corte Diario → entregas por día (sin filas de BODEGA) y quién recibió más.
+   - Devolución → devueltos por hoja y lo que más se devolvió.
+5. **Paso 3 · Hojas**: una tarjeta por hoja, agrupadas por tipo. Al darle clic se abre el desglose: las mismas tablas y columnas del Excel, con el título de cada bloque, lo producido, los folios y su fila de TOTALES. El buscador encuentra nombres, folios o áreas en todas las hojas.
 
-Las tablas se encuentran **por el texto de sus encabezados**, no por posición; puedes agregar filas, categorías u hojas nuevas mientras los encabezados se llamen igual.
+### Reglas de lectura
+
+- **BODEGA**: un movimiento con SOLICITANTE = BODEGA es stock que se quedó en bodega; no cuenta como acreditado. En el desglose esas filas se ven atenuadas.
+- **Extras / 2ª producción**: un bloque cuyo título dice EXTRA, SEGUNDA o TERCERA PRODUCCIÓN, o "<bloque> 2" cuando existe "<bloque>" en la misma hoja (p. ej. LIMITADO ZONA 2), se marca como producción adicional.
+- **Tipo de acreditación**: por el nombre de la categoría u hoja (o de sus bloques, p. ej. la hoja PADDOCK); los patrones están en `GROUPS` de `js/config.js`.
+
+Las tablas se encuentran **por el texto de sus encabezados** (SOLICITANTE, FECHA, CANTIDAD, CATEGORIA, PRODUCIDO…), no por posición: puedes agregar filas, bloques u hojas nuevas y aparecen solas. No cambies el texto de esos encabezados.
 
 ## Ajustes
 
-Al inicio del `<script>` de `index.html`:
+Todo en `js/config.js`:
 
 - `FILES`: nombres de los archivos en `data/`.
-- `GROUPS`: a qué grupo pertenece cada categoría (dona y filtro). Se evalúan en orden; lo que no coincida cae en "Otros".
-- `PAGE`: filas por página de la tabla.
+- `GROUPS`: tipos de acreditación y qué categorías caen en cada uno (el último, Operación, recibe todo lo demás).
+- `GLOSSARY`: lo que significa cada columna (aparece al pasar el mouse por el encabezado).

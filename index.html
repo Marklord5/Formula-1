@@ -3,692 +3,198 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Corte de Acreditaciones · Gran Premio de México 2026</title>
+<title>Acreditaciones F1 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<!-- Lector de Excel (SheetJS). Si el CDN falla se usa la copia local de vendor/ -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script>window.XLSX || document.write('<script src="vendor/xlsx.full.min.js"><\/script>')</script>
-<style>
-/* ===== Tokens (DESIGN.md · Paddock Telemetry & Credential Operations) ===== */
-:root{
-  --canvas:#0B0E14; --panel:#121824; --elev:#1A2234; --input:#0E131D; --stripe:#0E131C;
-  --ink:#E1E2EB; --ink-2:#BACAC6; --muted:#8A97AD; --faint:#62718A;
-  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.06); --line-cyan:rgba(0,210,190,.12);
-  --cyan:#00D2BE; --cyan-hi:#46EFDA; --red:#E10600; --red-ink:#FF8A7A; --amber:#FFB800; --green:#00E676;
-  --r-sm:.25rem; --r:.5rem; --r-lg:1rem;
-  --display:'Sora',system-ui,sans-serif; --body:'Hanken Grotesk',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
-}
-*{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth}
-body{background:var(--canvas);color:var(--ink);font:400 14px/20px var(--body);-webkit-font-smoothing:antialiased}
-.num,.kpi-val,td.n,.mono{font-variant-numeric:tabular-nums}
-.mono{font-family:var(--mono);font-size:12px}
-.wrap{max-width:1440px;margin:0 auto;padding:0 2rem}
-.label{font:700 10px/14px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.label-md{font:600 11px/16px var(--display);letter-spacing:.06em;text-transform:uppercase}
-h1{font:700 40px/48px var(--display);letter-spacing:-.03em}
-h2{font:600 16px/24px var(--display)}
-.sub{color:var(--muted);font-size:12px;line-height:16px}
-
-/* Topbar */
-.top{position:sticky;top:0;z-index:20;background:rgba(11,14,20,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:1.5rem;height:64px}
-.brand{display:flex;align-items:center;gap:.6rem;font:700 14px/16px var(--display)}
-.brand i{font-style:normal;background:var(--red);color:#fff;font:700 11px var(--display);padding:4px 6px;border-radius:var(--r-sm);letter-spacing:.04em}
-.event{display:flex;align-items:center;gap:.4rem;color:var(--ink-2);padding-left:1.5rem;border-left:1px solid var(--line)}
-.event svg{color:var(--cyan)}
-nav{display:flex;gap:.25rem;margin-left:auto}
-nav a{color:var(--ink-2);text-decoration:none;padding:.45rem .8rem;border-radius:var(--r);font:600 12px var(--display);letter-spacing:.02em}
-nav a:hover{color:var(--cyan);background:var(--line-cyan)}
-nav a.on{background:var(--cyan);color:var(--canvas)}
-
-/* Buttons & chips */
-.btn{display:inline-flex;align-items:center;gap:.5rem;height:36px;padding:0 1rem;border-radius:var(--r);border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--ink);font:600 12px var(--display);letter-spacing:.04em;cursor:pointer;transition:.15s}
-.btn:hover{color:var(--cyan);border-color:var(--cyan)}
-.btn.primary{background:var(--cyan);border-color:var(--cyan);color:var(--canvas)}
-.btn.primary:hover{box-shadow:0 0 18px rgba(0,210,190,.45);color:var(--canvas)}
-.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.chip{display:inline-flex;align-items:center;gap:.4rem;padding:2px 8px;border-radius:var(--r-sm);font:600 11px/16px var(--display);letter-spacing:.02em;border:1px solid transparent;white-space:nowrap}
-.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.chip.cyan{color:var(--cyan);background:rgba(0,210,190,.12);border-color:rgba(0,210,190,.35)}
-.chip.red{color:var(--red-ink);background:rgba(225,6,0,.12);border-color:rgba(225,6,0,.45)}
-.chip.amber{color:var(--amber);background:rgba(255,184,0,.12)}
-.chip.green{color:var(--green);background:rgba(0,230,118,.10)}
-.chip.slate{color:var(--muted);background:rgba(255,255,255,.05)}
-.chip.flat::before{display:none}
-
-/* Panels */
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:1rem;transition:.2s}
-.card.lg{padding:1.5rem}
-.card.hover:hover{background:var(--elev);border-color:rgba(0,210,190,.3);box-shadow:0 0 20px -4px rgba(0,210,190,.15)}
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1.5rem}
-.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s12{grid-column:span 12}
-section{margin-top:1.5rem}
-.head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem}
-
-/* Hero */
-.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;padding:2rem 0 1.5rem;border-bottom:1px solid var(--line)}
-.hero p{color:var(--ink-2);max-width:640px;margin-top:.5rem}
-.hero .meta{display:flex;gap:.75rem;align-items:center;margin-bottom:.75rem;color:var(--muted);font-size:12px}
-.actions{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
-
-/* KPI */
-.kpi{display:flex;flex-direction:column;gap:.75rem;min-height:150px}
-.kpi .row{display:flex;justify-content:space-between;align-items:center}
-.kpi-val{font:700 34px/40px var(--display);letter-spacing:-.02em}
-.kpi .ico{width:28px;height:28px;border-radius:var(--r-sm);display:grid;place-items:center;background:var(--line-cyan);color:var(--cyan)}
-.kpi .foot{margin-top:auto;display:flex;justify-content:space-between;gap:.5rem;font-size:12px;color:var(--muted);flex-wrap:wrap}
-
-/* Charts */
-.chart{position:relative}
-.chart svg{display:block;width:100%;overflow:visible}
-.axis text{fill:var(--faint);font:400 11px var(--body)}
-.grid-l{stroke:rgba(255,255,255,.06);stroke-width:1}
-.tip{position:absolute;pointer-events:none;background:rgba(18,24,36,.95);backdrop-filter:blur(16px);border:1px solid rgba(0,210,190,.3);border-radius:var(--r);padding:.5rem .75rem;font-size:12px;box-shadow:0 12px 36px rgba(0,0,0,.7);opacity:0;transition:opacity .1s;white-space:nowrap;z-index:5}
-.tip b{font:600 13px var(--display);display:block}
-.milestones{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
-.milestones b{display:block;font:700 20px/28px var(--display)}
-.legend{list-style:none;padding:0;display:grid;gap:.6rem;font-size:12px}
-.legend li{display:grid;grid-template-columns:10px 1fr auto auto;gap:.6rem;align-items:center}
-.legend i{width:10px;height:10px;border-radius:50%}
-.legend span:last-child{color:var(--muted);min-width:44px;text-align:right}
-.donut-wrap{display:grid;grid-template-columns:200px 1fr;gap:1.5rem;align-items:center}
-
-/* Utilización */
-.util{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-.util .card{background:var(--elev)}
-.bar{height:6px;border-radius:9999px;background:rgba(255,255,255,.06);overflow:hidden;margin:.6rem 0 .4rem}
-.bar i{display:block;height:100%;border-radius:9999px;background:var(--cyan)}
-.bar i.warn{background:var(--amber)}
-.util .t{display:flex;justify-content:space-between;align-items:center;gap:.5rem;font:600 13px/18px var(--display)}
-.util .t span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.util .m{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
-
-/* Tabla */
-.tools{display:flex;gap:.5rem}
-input[type=search],select{height:36px;background:var(--input);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);color:var(--ink);padding:0 .75rem;font:400 13px var(--body);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
-input[type=search]{width:240px}
-input::placeholder{color:var(--faint)}
-input[type=search]:focus,select:focus{border-color:var(--cyan);background:rgba(0,210,190,.04)}
-.tbl{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{font:700 10px/14px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:.75rem;background:var(--panel);border-bottom:1px solid var(--line-2);white-space:nowrap}
-th.n,td.n{text-align:right}
-td{padding:.75rem;border-bottom:1px solid rgba(255,255,255,.03)}
-tbody tr:nth-child(odd){background:var(--stripe)}
-tbody tr{box-shadow:inset 0 0 0 transparent;transition:.1s}
-tbody tr:hover{box-shadow:inset 2px 0 0 var(--cyan);background:var(--elev)}
-td .s{display:block;color:var(--muted);font-size:11px;line-height:15px}
-td.name{font-weight:600;font-size:13px}
-.mini{display:flex;align-items:center;gap:.5rem;justify-content:flex-end}
-.mini .bar{width:56px;margin:0}
-.pager{display:flex;justify-content:space-between;align-items:center;margin-top:1rem;color:var(--muted);font-size:12px}
-.pager div{display:flex;gap:.35rem}
-.pager button{min-width:32px;height:30px;padding:0 .6rem}
-.pager button.on{background:var(--cyan);color:var(--canvas);border-color:var(--cyan)}
-.empty{padding:2rem;text-align:center;color:var(--muted)}
-
-/* Módulos & devoluciones */
-.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
-.mods .card{background:var(--elev);border-left:2px solid var(--cyan)}
-.mods b{display:block;font:700 22px/30px var(--display);margin:.25rem 0}
-.feed{list-style:none;padding:0;margin-top:1rem;display:grid;gap:.5rem}
-.feed li{display:grid;grid-template-columns:64px 1fr auto;gap:.75rem;align-items:center;padding:.6rem .75rem;background:var(--input);border:1px solid var(--line);border-left:2px solid var(--cyan);border-radius:var(--r-sm);font-size:12px}
-.feed li .s{color:var(--muted);font-size:11px}
-.feed .q{font:600 13px var(--display)}
-.rows{display:grid;gap:.6rem;margin-top:1rem}
-.rows .r{display:grid;grid-template-columns:1fr 64px;gap:.75rem;align-items:center;font-size:12px}
-.rows .r .bar{margin:.3rem 0 0}
-.rows .r b{text-align:right;font:600 13px var(--display)}
-.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
-.tiles .card{background:var(--input)}
-.tiles b{display:block;font:700 22px/30px var(--display);margin-top:.25rem}
-
-/* Estado de carga */
-#status{position:fixed;inset:0;display:grid;place-items:center;background:var(--canvas);z-index:50;text-align:center;padding:2rem}
-#status .box{max-width:460px;display:grid;gap:1rem;justify-items:center}
-#status.hide{display:none}
-.drop{border:1px dashed rgba(0,210,190,.4);border-radius:var(--r-lg);padding:1.5rem;color:var(--ink-2)}
-footer{margin:2.5rem 0 0;border-top:1px solid var(--line);padding:1.25rem 0 2rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--muted);font-size:12px}
-
-/* Responsive: 8 col tablet, 4 col móvil */
-@media (max-width:1439px){.util{grid-template-columns:repeat(4,1fr)}}
-@media (max-width:1100px){
-  .s3{grid-column:span 6}.s5,.s7,.s6{grid-column:span 12}
-  .util{grid-template-columns:repeat(2,1fr)} nav{display:none}
-}
-@media (max-width:767px){
-  .wrap{padding:0 1rem}.grid{gap:1rem}
-  .s3{grid-column:span 12}
-  h1{font:700 30px/38px var(--display);letter-spacing:-.02em}
-  .hero{flex-direction:column;align-items:flex-start}.actions{justify-content:flex-start}
-  .event{display:none}
-  .donut-wrap{grid-template-columns:1fr;justify-items:center}.legend{width:100%}
-  .util,.mods,.tiles{grid-template-columns:1fr}
-  .head{flex-direction:column}.tools{width:100%;flex-direction:column}input[type=search]{width:100%}
-  .pager{flex-direction:column;gap:.75rem}.pager div{flex-wrap:wrap;justify-content:center}
-}
-@media print{
-  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .top,.actions,.tools,.pager div{display:none!important}
-  .card{break-inside:avoid}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<script src="vendor/xlsx.full.min.js" defer></script>
+<script src="js/file-guard.js" defer></script>
+<script src="js/main.js" type="module"></script>
 </head>
 <body>
 
-<div id="status"><div class="box">
-  <div class="label">Cargando datos</div>
-  <p id="statusMsg" class="sub">Leyendo los archivos de Excel de <span class="mono">data/</span>…</p>
-</div></div>
+<div id="status" data-state="loading">
+  <div class="box loading">
+    <div class="label">Cargando datos</div>
+    <p class="sub">Leyendo los archivos de Excel de <span class="mono">data/</span>…</p>
+  </div>
+  <div class="box file">
+    <div class="label">Abre el reporte con el lanzador</div>
+    <p class="sub">El navegador no deja leer la carpeta <span class="mono">data/</span> cuando abres el index.html con doble clic.<br><br>
+      Cierra esta pestaña y da doble clic en <b>Abrir reporte.command</b> (en la misma carpeta).</p>
+    <p class="sub">En GitHub Pages carga solo, sin lanzador.</p>
+  </div>
+  <div class="box error">
+    <div class="label">No se pudieron cargar los datos</div>
+    <p class="sub" data-f="error"></p>
+    <p class="sub">Revisa que existan <span class="mono" data-f="requiredFiles"></span> con esos nombres exactos.</p>
+  </div>
+</div>
 
 <header class="top"><div class="wrap">
-  <div class="brand"><i>F1</i>Credential Ops</div>
-  <div class="event label-md"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg><span id="eventName">Gran Premio de México 2026</span></div>
-  <nav>
-    <a href="#resumen" class="on">Resumen</a>
-    <a href="#categorias">Categorías</a>
-    <a href="#modulos">Módulos</a>
-    <a href="#devoluciones">Devoluciones</a>
-    <a href="#genericos">Genéricos</a>
-  </nav>
+  <div class="brand"><i>F1</i>Reporte Acreditaciones</div>
+  <div class="event label-md">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    Gran Premio de México 2026
+  </div>
 </div></header>
 
 <main class="wrap">
 
-  <div class="hero" id="resumen">
+  <div class="hero">
     <div>
-      <div class="meta"><span class="chip red flat">CORTE FINAL</span><span id="lastMove"></span></div>
-      <h1 id="title">Corte Final de Acreditaciones</h1>
-      <p>Consolidado de producción, entrega y sobrantes de acreditaciones por categoría, movimientos diarios de folios y devoluciones del evento.</p>
-    </div>
-    <div class="actions">
-      <button class="btn primary" id="btnCsv"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Exportar CSV</button>
-      <button class="btn" onclick="print()">Imprimir / PDF</button>
-      <label class="btn" title="Prueba Excel nuevos sin subirlos al repositorio"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6M5 15a8 8 0 0 0 14 2M19 9A8 8 0 0 0 5 7"/></svg>Cargar Excel<input type="file" accept=".xlsx,.xls" multiple hidden id="fileIn"></label>
+      <div class="meta"><span class="chip red">TUS 3 EXCEL</span><span data-f="readAt"></span></div>
+      <h1>Acreditaciones F1 2026</h1>
+      <p>Resumen del corte de acreditaciones con la información de los 3 Excel: lo que se produjo, lo que se entregó, lo que sobró y lo que regresó. Todo sale directo de los archivos y se actualiza solo.</p>
     </div>
   </div>
 
-  <section class="grid" id="kpis"></section>
+  <div class="steps">
+    <div class="step"><b>1</b><div><strong>Elige un Excel</strong><span>Corte Final, Corte Diario o Devolución.</span></div></div>
+    <div class="step"><b>2</b><div><strong>Mira las gráficas</strong><span>Pasa el mouse sobre una barra para ver el detalle.</span></div></div>
+    <div class="step"><b>3</b><div><strong>Abre una hoja o busca</strong><span>Dale clic a la tarjeta de una hoja para ver sus tablas, o busca un nombre, folio o área.</span></div></div>
+  </div>
 
-  <section class="grid">
-    <div class="card lg s7">
+  <section class="grid" id="kpis">
+    <button class="card hover kpi s3" data-file="final">
+      <span class="label">Producido</span>
+      <span><span class="kpi-val" data-f="produced"></span><span class="sub">Corte Final · suma de la columna PRODUCIDO</span></span>
+      <span class="foot"><span class="chip slate">Lo que se imprimió</span><span>Ver Excel →</span></span>
+    </button>
+    <button class="card hover kpi s3" data-file="final">
+      <span class="label">Total acreditaciones</span>
+      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="sub">Corte Final · suma de TOTAL ACREDITACIONES</span></span>
+      <span class="foot"><span class="chip green" data-f="deliveredShare"></span><span>Ver Excel →</span></span>
+    </button>
+    <button class="card hover kpi s3" data-file="final">
+      <span class="label">Total sobrante</span>
+      <span><span class="kpi-val amber" data-f="leftover"></span><span class="sub">Corte Final · suma de TOTAL SOBRANTE</span></span>
+      <span class="foot"><span class="chip amber" data-f="leftoverShare"></span><span>Ver Excel →</span></span>
+    </button>
+    <button class="card hover kpi s3" data-file="returns">
+      <span class="label">Devueltos</span>
+      <span><span class="kpi-val red" data-f="returned"></span><span class="sub">Devolución · suma de CANTIDAD (todas las hojas)</span></span>
+      <span class="foot"><span class="chip red" data-f="returnSheets"></span><span>Ver Excel →</span></span>
+    </button>
+  </section>
+
+  <div class="section-title"><h2>Por tipo de acreditación</h2><span class="sub">Corte Final separado como lo trabaja la oficina</span></div>
+  <section class="groups" id="groups"></section>
+
+  <section class="overview">
+    <div class="card lg" id="trend">
       <div class="head">
-        <div><h2>Curva de Movimientos Acumulada</h2><div class="sub">Folios entregados desde bodega por fecha (corte diario)</div></div>
-        <span class="chip red" id="cutChip"></span>
+        <div><h2>Curva de Movimientos Acumulada</h2><div class="sub">Folios entregados desde bodega por fecha (Corte Diario, sin filas de BODEGA)</div></div>
+        <span class="chip red" data-f="cutDate"></span>
       </div>
       <div class="chart" id="curve"></div>
-      <div class="milestones" id="milestones"></div>
+      <div class="milestones">
+        <div id="milestone-first"><div class="sub">Primer movimiento · <span data-f="date"></span></div><b class="num" data-f="qty"></b><span class="sub" data-f="weekday"></span></div>
+        <div id="milestone-peak"><div class="sub peak">Día pico · <span data-f="date"></span></div><b class="num" data-f="qty"></b><span class="sub" data-f="weekday"></span></div>
+        <div id="milestone-last"><div class="sub">Último movimiento · <span data-f="date"></span></div><b class="num" data-f="qty"></b><span class="sub" data-f="weekday"></span></div>
+      </div>
     </div>
-    <div class="card lg s5">
+    <div class="card lg" id="distribution">
       <div class="head">
-        <div><h2>Distribución de Acreditaciones</h2><div class="sub">Total entregado por grupo de categoría</div></div>
-        <span class="chip slate flat" id="donutTotal"></span>
+        <div><h2>Distribución de Acreditaciones</h2><div class="sub">Total entregado por tipo de acreditación (Corte Final)</div></div>
+        <span class="chip slate" data-f="donutTotal"></span>
       </div>
-      <div class="donut-wrap chart"><div id="donut"></div><ul class="legend" id="legend"></ul></div>
+      <div class="donut-wrap"><div id="donut"></div><ul class="donut-legend" id="legend"></ul></div>
     </div>
   </section>
 
-  <section class="card lg">
-    <div class="head">
-      <div><h2>Utilización por Categoría</h2><div class="sub">Las 8 categorías con mayor producción · entregado vs producido</div></div>
-      <div style="display:flex;gap:.5rem"><span class="chip cyan">Normal</span><span class="chip amber">Cupo ≥ 90%</span></div>
-    </div>
-    <div class="util" id="util"></div>
-  </section>
+  <div class="section-title"><h2>Paso 1 · Elige el Excel</h2></div>
+  <nav class="tabs" id="tabs" aria-label="Archivos de Excel"></nav>
 
-  <section class="card lg" id="categorias">
-    <div class="head">
-      <div><h2>Corte Consolidado por Categoría</h2><div class="sub" id="tblSub"></div></div>
-      <div class="tools">
-        <input type="search" id="q" placeholder="Buscar categoría o folio…">
-        <select id="grp"><option value="">Todos los grupos</option></select>
-      </div>
-    </div>
-    <div class="tbl"><table>
-      <thead><tr>
-        <th>Folios</th><th>Categoría</th><th class="n">Producido</th><th class="n">Paquete</th><th class="n">Módulo</th><th class="n">Total entregado</th><th class="n">Sobrante</th><th class="n">Uso</th><th>Estatus</th>
-      </tr></thead>
-      <tbody id="tbody"></tbody>
-    </table></div>
-    <div class="pager"><span id="pgInfo"></span><div id="pg"></div></div>
-  </section>
+  <div class="section-title"><h2>Paso 2 · Resumen en gráficas</h2><span class="sub" id="chartsFor"></span></div>
+  <div class="charts" id="charts"></div>
 
-  <section class="grid">
-    <div class="card lg s6" id="modulos">
-      <div class="head">
-        <div><h2>Entregas a Módulos</h2><div class="sub">Folios enviados a cada módulo de acreditación</div></div>
-        <span class="chip green" id="modTotal"></span>
-      </div>
-      <div class="mods" id="mods"></div>
-      <div class="label" style="margin-top:1.25rem">Últimos movimientos</div>
-      <ul class="feed" id="feed"></ul>
+  <div class="section-title"><h2>Paso 3 · Hojas del Excel</h2><span class="sub">Dale clic a una tarjeta para ver su desglose</span></div>
+  <div class="toolbar">
+    <div class="label" id="sheetInfo"></div>
+    <div class="right">
+      <input type="search" id="query" placeholder="Buscar nombre, folio, área…" aria-label="Buscar en este Excel">
+      <a class="btn" id="download" download>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Descargar este Excel
+      </a>
+      <button class="btn" id="btnPrint">Imprimir</button>
     </div>
-    <div class="card lg s6" id="devoluciones">
-      <div class="head">
-        <div><h2>Devoluciones</h2><div class="sub">Brazaletes y acreditaciones regresados después del evento</div></div>
-        <span class="chip amber" id="devTotal"></span>
-      </div>
-      <div class="tiles" id="devTiles"></div>
-      <div class="label" style="margin-top:1.25rem">Categorías con más devoluciones</div>
-      <div class="rows" id="devTop"></div>
-    </div>
-  </section>
+  </div>
+  <div class="sheets" id="sheets"></div>
 
-  <section class="card lg" id="genericos">
-    <div class="head">
-      <div><h2>Genéricos Activados</h2><div class="sub">Brazaletes genéricos asignados a eventos y zonas</div></div>
-      <span class="chip cyan" id="genTotal"></span>
-    </div>
-    <div class="tbl"><table>
-      <thead><tr><th>Categoría</th><th>Tipo</th><th>Solicitante</th><th>Área</th><th class="n">Cantidad</th><th class="n">Sobrante entregado</th></tr></thead>
-      <tbody id="genBody"></tbody>
-    </table></div>
-  </section>
+  <div class="hint" id="hint">☝️ Dale clic a una tarjeta para ver el desglose de esa hoja</div>
+  <div class="section-title" id="detail" hidden>
+    <h2>Desglose · <span id="detailName"></span></h2>
+    <button class="btn" id="back">↑ Ver todas las hojas</button>
+  </div>
+  <div id="body"></div>
 
   <footer>
     <span>FORMULA 1 · GRAN PREMIO DE MÉXICO 2026 · Oficina de Acreditaciones</span>
-    <span id="source"></span>
+    <span data-f="source"></span>
   </footer>
 </main>
 
-<script>
-/* ============================================================
-   CONFIGURACIÓN — si cambian nombres de archivo o grupos, edita aquí
-   ============================================================ */
-const FILES = {
-  final: 'data/corte-final.xlsx',   // CORTE FINAL F1-2026
-  diario: 'data/corte-diario.xlsx', // CORTE DIARIO DE ACREDITACIONES 2026
-  devol: 'data/devolucion.xlsx'     // DEVOLUCIÓN F1 2026
-};
-// Grupo de cada categoría: se evalúa en orden, gana la primera coincidencia
-const GROUPS = [
-  ['Montaje / Desmontaje', /MONTAJE/],
-  ['Hospitalidades', /HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE|PIT LOUNGE|SUITES|INVITADO/],
-  ['Operación y servicios', /OPERACIONES|PRODUCCION|LIMITADO|^A Y B$|VENDEDOR|LIMPIEZA|PLAYAS|FOTOGRAFOS|OMDAI/],
-  ['Autoridades y seguridad', /AUTORIDADES|ESCOLTAS|PROTOCOLO|CHOFER/],
-  ['Pit Walk', /PIT WALK/]
-];
-// Paleta categórica validada (dark, superficie #121824, CVD ΔE ≥ 8). "Otros" en gris.
-const COLORS = ['#00A898', '#D95F4E', '#9575E8', '#B98A1E', '#4F8EF7'], OTHER = '#6B778C';
-const PAGE = 10;
+<div id="tip" role="tooltip"></div>
 
-/* ============================== utilidades ============================== */
-const $ = s => document.querySelector(s);
-const fmt = n => Math.round(n || 0).toLocaleString('es-MX');
-const pct = (a, b) => b ? a / b * 100 : 0;
-const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const num = v => typeof v === 'number' ? v : (typeof v === 'string' && /^\s*-?\d+(\.\d+)?\s*$/.test(v) ? +v : NaN);
-const groupOf = cat => { const k = norm(cat); const i = GROUPS.findIndex(([, re]) => re.test(k)); return i < 0 ? 'Otros' : GROUPS[i][0]; };
-const colorOf = g => COLORS[GROUPS.findIndex(([name]) => name === g)] || OTHER;
-const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-const dShort = d => `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
-// Fecha de Excel (número serial o texto dd-mm-aa) → Date UTC a medianoche
-function toDate(v) {
-  if (typeof v === 'number' && v > 30000 && v < 80000) return new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 864e5);
-  const m = typeof v === 'string' && v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
-  if (m) return new Date(Date.UTC(m[3].length === 2 ? 2000 + +m[3] : +m[3], m[2] - 1, +m[1]));
-  return null;
-}
-// Hoja → matriz de valores (limitada para hojas con rangos enormes)
-function grid(ws, maxR = 1500, maxC = 60) {
-  if (!ws['!ref']) return [];
-  const r = XLSX.utils.decode_range(ws['!ref']);
-  r.e.r = Math.min(r.e.r, maxR); r.e.c = Math.min(r.e.c, maxC);
-  return XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, range: r, blankrows: true });
-}
-// Busca en una fila los índices de columnas por nombre de encabezado
-function cols(row, names, from = 0, to = row.length) {
-  const out = {};
-  for (let c = from; c < Math.min(to, row.length); c++) {
-    const h = norm(row[c]);
-    for (const [key, re] of Object.entries(names)) if (out[key] == null && re.test(h)) out[key] = c;
-  }
-  return out;
-}
+<!-- ===== Plantillas: el JS las clona y rellena los [data-f] ===== -->
 
-/* ============================== parsers ============================== */
-// CORTE FINAL: tabla por categoría + genéricos + folios
-function parseFinal(wb) {
-  const res = { title: '', rows: [], gen: [], folios: {} };
-  for (const name of wb.SheetNames) {
-    const g = grid(wb.Sheets[name], 400, 20);
-    g.forEach((row, r) => {
-      const c = cols(row, { cat: /^CATEGORIA$/, prod: /^PRODUCIDO$/, paq: /^ENTREGADO PAQUETE/, mod: /^ACREDITADO MODULO/, tot: /^TOTAL ACREDITACIONES/, sb: /^SOBRANTE BODEGA/, sm: /^SOBRANTE MODULO/, st: /^TOTAL SOBRANTE/ });
-      if (c.cat != null && c.tot != null) {             // tabla principal
-        res.title = res.title || String(g[r - 1]?.find(v => v) ?? '').trim();
-        for (let i = r + 1; i < g.length && g[i][c.cat] != null && String(g[i][c.cat]).trim(); i++) {
-          const x = g[i], v = k => num(x[c[k]]) || 0;
-          res.rows.push({ cat: String(x[c.cat]).trim(), prod: v('prod'), paq: v('paq'), mod: v('mod'), tot: v('tot'), sb: v('sb'), sm: v('sm'), st: v('st') });
-        }
-      }
-      if (row.some(v => /^GENERICOS/.test(norm(v)))) {   // genéricos activados
-        const h = cols(g[r + 1] || [], { cat: /^CATEGORIA$/, tipo: /^TIPO$/, cant: /^CANTIDAD$/, sol: /^SOLICITANTE$/, area: /^AREA$/, sob: /^SOBRANTE ENTREGADO/ });
-        let sol = '', area = '';
-        for (let i = r + 2; i < g.length; i++) {
-          const x = g[i], cat = String(x[h.cat] ?? '').trim();
-          if (!cat) continue;
-          sol = String(x[h.sol] ?? '').trim() || sol; area = String(x[h.area] ?? '').trim() || area;
-          res.gen.push({ cat, tipo: String(x[h.tipo] ?? '').trim(), cant: num(x[h.cant]) || 0, sob: num(x[h.sob]), sol, area });
-        }
-      }
-      const f = cols(row, { cat: /^CATEGORIA$/, fi: /^FOLIO INICIAL$/, ff: /^FOLIO FINAL$/ });
-      if (f.cat != null && f.fi != null && f.ff != null) { // hojas de folios
-        let cur = null;
-        for (let i = r + 1; i < g.length; i++) {
-          const x = g[i];
-          if (x[f.cat]) cur = norm(x[f.cat]);
-          if (cur && x[f.fi] != null && x[f.ff] != null) (res.folios[cur] ||= []).push(`${x[f.fi]}–${x[f.ff]}`);
-        }
-      }
-    });
-  }
-  return res;
-}
+<template id="tpl-tab">
+  <button class="tab">
+    <span class="ico"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></span>
+    <span><b data-f="name"></b><span data-f="detail"></span></span>
+  </button>
+</template>
 
-// CORTE DIARIO: todos los bloques "SOLICITANTE | ÁREA | FECHA | … | CANTIDAD" de todas las hojas
-function parseDiario(wb) {
-  const moves = [];
-  const skip = /^[\d\s-]+$|OPFM|PITWALK|GTRD|FOLIO|SOBRANTE|✅|^ACREDITACIONES$|FORMULA/;
-  for (const sheet of wb.SheetNames) {
-    const g = grid(wb.Sheets[sheet], 1200, 60);
-    g.forEach((row, r) => row.forEach((v, c) => {
-      if (norm(v) !== 'SOLICITANTE') return;
-      const h = cols(row, { area: /^AREA$/, fecha: /^FECHA$/, fi: /^FOLIO INICIAL$/, ff: /^FOLIO FINAL$/, cant: /^CANTIDAD$/ }, c, c + 9);
-      if (h.cant == null) return;
-      let block = sheet;                                  // título del bloque: 1-3 filas arriba
-      find: for (let rr = r - 1; rr >= Math.max(0, r - 3); rr--)
-        for (let k = Math.max(0, c - 2); k < c + 8; k++) {
-          const t = String(g[rr][k] ?? '').trim();
-          if (t && isNaN(t) && !skip.test(norm(t))) { block = t; break find; }
-        }
-      for (let i = r + 1; i < g.length; i++) {
-        const x = g[i], first = norm(x[c]);
-        if (first === 'SOLICITANTE' || first.startsWith('FOLIOS') || x.slice(c, c + 8).some(t => /TOTAL/.test(norm(t)))) break;
-        const q = num(x[h.cant]);
-        if (!(q > 0)) continue;
-        moves.push({ sheet, block, sol: String(x[c] ?? '').trim(), area: String(x[h.area] ?? '').trim(), date: h.fecha != null ? toDate(x[h.fecha]) : null, fi: x[h.fi], ff: x[h.ff], q });
-      }
-    }));
-  }
-  return moves;
-}
+<template id="tpl-group">
+  <article class="card group">
+    <div class="group-head"><h2 data-f="name"></h2><span class="chip slate" data-f="categories"></span></div>
+    <span class="meter"><i class="c-ent"></i></span>
+    <dl class="group-stats">
+      <div><dt>Entregado</dt><dd class="num"><span data-f="delivered"></span> <small data-f="deliveredShare"></small></dd></div>
+      <div><dt>En bodega</dt><dd class="num"><span data-f="warehouse"></span> <small data-f="warehouseShare"></small></dd></div>
+      <div class="module"><dt>En módulo</dt><dd class="num"><span data-f="module"></span> <small data-f="moduleShare"></small></dd></div>
+      <div><dt>Total</dt><dd class="num" data-f="produced"></dd></div>
+    </dl>
+    <details class="concepts">
+      <summary>Desglose por concepto</summary>
+      <div class="tbl"><table>
+        <thead><tr><th>Concepto</th><th class="n">Entregado</th><th class="n">En bodega</th><th class="n module">En módulo</th><th class="n">Total</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr>
+          <td>TOTAL GENERAL</td><td class="n num" data-f="delivered"></td><td class="n num" data-f="warehouse"></td>
+          <td class="n num module" data-f="module"></td><td class="n num" data-f="produced"></td>
+        </tr></tfoot>
+      </table></div>
+    </details>
+  </article>
+</template>
 
-// DEVOLUCIÓN: cada hoja con encabezado CANTIDAD y CATEGORIA / TIPO DE BRAZALETE
-function parseDevol(wb) {
-  const out = [];
-  for (const sheet of wb.SheetNames) {
-    const g = grid(wb.Sheets[sheet], 600, 20);
-    let h = null;
-    g.forEach(row => {
-      const c = cols(row, { cat: /^CATEGORIA$|^TIPO DE BRAZALETE$/, cant: /^CANTIDAD$/ });
-      if (c.cat != null && c.cant != null) { h = c; return; }
-      const q = h && num(row[h.cant]);
-      if (q > 0) out.push({ sheet: sheet.trim(), cat: String(row[h.cat] ?? '').trim() || 'Sin categoría', q });
-    });
-  }
-  return out;
-}
+<template id="tpl-legend">
+  <li><i></i><span data-f="name"></span><span class="num" data-f="value"></span><span class="num" data-f="share"></span></li>
+</template>
 
-// Identifica qué archivo es por su contenido (para "Cargar Excel")
-function kindOf(wb) {
-  const txt = wb.SheetNames.slice(0, 3).map(n => grid(wb.Sheets[n], 6, 12).flat().map(norm).join('|')).join('|');
-  if (/TOTAL ACREDITACIONES/.test(txt)) return 'final';
-  if (/DEVOLUCION/.test(txt)) return 'devol';
-  return 'diario';
-}
+<template id="tpl-concept">
+  <tr><td class="name" data-f="name"></td><td class="n num" data-f="delivered"></td><td class="n num" data-f="warehouse"></td><td class="n num module" data-f="module"></td><td class="n num" data-f="produced"></td></tr>
+</template>
 
-/* ============================== render ============================== */
-let DATA = {}, view = { q: '', grp: '', page: 0 };
+<template id="tpl-sheet-group">
+  <div class="sheet-group">
+    <div class="sg-head"><span class="label" data-f="name"></span><span class="sub" data-f="count"></span></div>
+    <div class="sg-cards"></div>
+  </div>
+</template>
 
-function render() {
-  const { final, diario, devol } = DATA;
-  const rows = final.rows.map(r => ({ ...r, grp: groupOf(r.cat), uso: pct(r.tot, r.prod), folios: final.folios[norm(r.cat)] || [] }));
-  DATA.rowsX = rows;
-  const sum = k => rows.reduce((a, r) => a + r[k], 0);
-  const P = sum('prod'), T = sum('tot'), SB = sum('sb'), SM = sum('sm'), ST = sum('st'), PQ = sum('paq'), MD = sum('mod');
-  const moves = diario.filter(m => norm(m.sol) !== 'BODEGA');
-  // Fechas con error de captura (p. ej. año 2027) se descartan: solo ±120 días alrededor de la mediana
-  const ts = moves.filter(m => m.date).map(m => m.date.getTime()).sort((a, b) => a - b), mid = ts[ts.length >> 1];
-  const dated = moves.filter(m => m.date && Math.abs(m.date - mid) <= 120 * 864e5);
-  const last = dated.reduce((a, m) => m.date > a ? m.date : a, new Date(0));
-  const devTotal = devol.reduce((a, d) => a + d.q, 0);
+<template id="tpl-sheet">
+  <button class="card hover sc">
+    <span class="sc-top"><b data-f="name"></b><span class="chip slate" data-f="blocks"></span></span>
+    <span class="sc-val"><strong class="num" data-f="value"></strong><span class="sub" data-f="unit"></span></span>
+    <span class="meter"><i class="c-ent"></i></span>
+    <span class="chip amber" data-f="extra"></span>
+    <span class="sc-foot"><span data-f="detail"></span><span data-f="action"></span></span>
+  </button>
+</template>
 
-  if (final.title) $('#title').textContent = final.title.replace(/\s+/g, ' ').replace(/^CORTE FINAL DE ACREDITACIONES/i, 'Corte Final de Acreditaciones');
-  $('#lastMove').textContent = dated.length ? `Último movimiento: ${DIAS[last.getUTCDay()]} ${dShort(last)} ${last.getUTCFullYear()}` : '';
-
-  // KPIs
-  const icon = p => `<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p}</svg></span>`;
-  const kpi = (lbl, val, sub, foot, ic, color = 'var(--ink)') => `<div class="card hover kpi s3">
-      <div class="row"><span class="label">${lbl}</span>${ic}</div>
-      <div><div class="kpi-val" style="color:${color}">${val}</div><div class="sub">${sub}</div></div>
-      <div class="foot">${foot}</div></div>`;
-  $('#kpis').innerHTML =
-    kpi('Acreditaciones producidas', fmt(P), `${rows.length} categorías en el corte final`,
-        `<span class="chip green">${fmt(pct(T, P))}% entregado</span><span>Sobrante ${fmt(ST)}</span>`,
-        icon('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/>')) +
-    kpi('Total entregado', fmt(T), `Paquete ${fmt(PQ)} · Módulo ${fmt(MD)}`,
-        `<span class="chip cyan">Corte cerrado</span><span>${fmt(pct(PQ, T))}% en paquete</span>`,
-        icon('<path d="M20 6L9 17l-5-5"/>'), 'var(--cyan-hi)') +
-    kpi('Sobrante total', fmt(ST), `Bodega ${fmt(SB)} · Módulo ${fmt(SM)}`,
-        `<span class="chip amber">${fmt(pct(ST, P))}% de lo producido</span>`,
-        icon('<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/>'), 'var(--amber)') +
-    kpi('Devoluciones', fmt(devTotal), `${new Set(devol.map(d => d.sheet)).size} tipos de devolución registrados`,
-        `<span class="chip red">${fmt(devol.length)} registros</span><span>Post-evento</span>`,
-        icon('<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>'), 'var(--red-ink)');
-
-  drawCurve(dated, last);
-  drawDonut(rows, T);
-
-  // Utilización (top 8 por producido)
-  $('#util').innerHTML = [...rows].sort((a, b) => b.prod - a.prod).slice(0, 8).map(r => {
-    const warn = r.uso >= 90;
-    return `<div class="card hover"><div class="t"><span title="${esc(r.cat)}">${esc(r.cat)}</span><span class="chip ${warn ? 'amber' : 'cyan'} flat">${r.uso.toFixed(1)}%</span></div>
-      <div class="bar"><i class="${warn ? 'warn' : ''}" style="width:${Math.min(100, r.uso)}%"></i></div>
-      <div class="m"><span>${fmt(r.tot)} entregadas</span><span>Producido ${fmt(r.prod)}</span></div></div>`;
-  }).join('');
-
-  // Filtro de grupos
-  const groups = [...new Set(rows.map(r => r.grp))];
-  $('#grp').innerHTML = '<option value="">Todos los grupos</option>' + groups.map(g => `<option ${g === view.grp ? 'selected' : ''}>${esc(g)}</option>`).join('');
-  renderTable();
-
-  // Módulos
-  const byMod = {};
-  moves.filter(m => /^MODULO/.test(norm(m.sol))).forEach(m => { const k = norm(m.sol).replace(/^MODULO /, ''); byMod[k] = (byMod[k] || 0) + m.q; });
-  const modArr = Object.entries(byMod).sort((a, b) => b[1] - a[1]), modTot = modArr.reduce((a, m) => a + m[1], 0);
-  $('#modTotal').textContent = `${fmt(modTot)} folios`;
-  $('#mods').innerHTML = modArr.slice(0, 3).map(([k, v]) => `<div class="card"><div class="label">Módulo ${esc(k.toLowerCase())}</div><b class="num">${fmt(v)}</b><span class="sub">${pct(v, modTot).toFixed(1)}% del total a módulos</span></div>`).join('') || '<div class="empty">Sin entregas a módulos</div>';
-  const recent = [...dated].sort((a, b) => b.date - a.date || 0).slice(0, 6);
-  $('#feed').innerHTML = recent.map(m => `<li><span class="mono" style="color:var(--muted)">${dShort(m.date)}</span>
-      <span><span class="mono" style="color:var(--cyan)">${esc(m.fi)}${m.ff != null && m.ff !== m.fi ? '–' + esc(m.ff) : ''}</span> · ${esc(m.sol || 'Sin solicitante')}<div class="s">${esc(m.block)}</div></span>
-      <span class="q num">${fmt(m.q)}</span></li>`).join('');
-
-  // Devoluciones
-  $('#devTotal').textContent = `${fmt(devTotal)} devueltos`;
-  const bySheet = {}; devol.forEach(d => bySheet[d.sheet] = (bySheet[d.sheet] || 0) + d.q);
-  $('#devTiles').innerHTML = Object.entries(bySheet).map(([k, v]) => `<div class="card"><div class="label">${esc(k)}</div><b class="num">${fmt(v)}</b><span class="sub">${pct(v, devTotal).toFixed(1)}% del total</span></div>`).join('');
-  const byCat = {}; devol.forEach(d => { const k = norm(d.cat); byCat[k] = (byCat[k] || 0) + d.q; });
-  const top = Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 6), max = top[0]?.[1] || 1;
-  $('#devTop').innerHTML = top.map(([k, v]) => `<div class="r"><div>${esc(k)}<div class="bar"><i style="width:${pct(v, max)}%;background:var(--amber)"></i></div></div><b class="num">${fmt(v)}</b></div>`).join('');
-
-  // Genéricos
-  const genTot = final.gen.reduce((a, g) => a + g.cant, 0);
-  $('#genTotal').textContent = `${fmt(genTot)} activados`;
-  $('#genBody').innerHTML = final.gen.map(g => `<tr><td class="name">${esc(g.cat)}</td><td><span class="chip slate flat">${esc(g.tipo || '—')}</span></td><td>${esc(g.sol || '—')}</td><td>${esc(g.area || '—')}</td><td class="n num">${fmt(g.cant)}</td><td class="n num">${isNaN(g.sob) ? '—' : fmt(g.sob)}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">Sin genéricos</td></tr>';
-}
-
-function status(r) {
-  if (r.prod && r.tot >= r.prod) return ['green', 'Entregado'];
-  if (!r.tot) return ['red', 'Sin uso'];
-  if (r.uso >= 70) return ['cyan', 'Alto'];
-  return ['amber', 'Sobrante'];
-}
-
-function filtered() {
-  const q = norm(view.q);
-  return DATA.rowsX.filter(r => (!view.grp || r.grp === view.grp) && (!q || norm(r.cat + ' ' + r.folios.join(' ')).includes(q)));
-}
-
-function renderTable() {
-  const rows = filtered(), pages = Math.max(1, Math.ceil(rows.length / PAGE));
-  view.page = Math.min(view.page, pages - 1);
-  const slice = rows.slice(view.page * PAGE, view.page * PAGE + PAGE);
-  $('#tblSub').textContent = `${rows.length} categorías · producido vs entregado y sobrantes`;
-  $('#tbody').innerHTML = slice.map(r => {
-    const [cls, txt] = status(r);
-    return `<tr>
-      <td class="mono" style="color:${r.folios.length ? 'var(--cyan)' : 'var(--faint)'}">${esc(r.folios[0] || '—')}${r.folios.length > 1 ? `<span class="s">+${r.folios.length - 1} rango${r.folios.length > 2 ? 's' : ''}</span>` : ''}</td>
-      <td class="name">${esc(r.cat)}<span class="s">${esc(r.grp)}</span></td>
-      <td class="n num">${fmt(r.prod)}</td><td class="n num">${fmt(r.paq)}</td><td class="n num">${fmt(r.mod)}</td>
-      <td class="n num" style="font-weight:600">${fmt(r.tot)}</td>
-      <td class="n num">${fmt(r.st)}<span class="s">B ${fmt(r.sb)} · M ${fmt(r.sm)}</span></td>
-      <td class="n"><div class="mini"><span class="num">${r.uso.toFixed(0)}%</span><div class="bar"><i class="${r.uso >= 90 ? 'warn' : ''}" style="width:${Math.min(100, r.uso)}%"></i></div></div></td>
-      <td><span class="chip ${cls}">${txt}</span></td></tr>`;
-  }).join('') || '<tr><td colspan="9" class="empty">Sin resultados</td></tr>';
-  $('#pgInfo').textContent = rows.length ? `Mostrando ${view.page * PAGE + 1}–${view.page * PAGE + slice.length} de ${rows.length}` : '';
-  const btn = (p, label = p + 1) => `<button class="btn ${p === view.page ? 'on' : ''}" data-p="${p}" ${p < 0 || p >= pages ? 'disabled' : ''}>${label}</button>`;
-  $('#pg').innerHTML = btn(view.page - 1, 'Anterior') + Array.from({ length: pages }, (_, i) => btn(i)).join('') + btn(view.page + 1, 'Siguiente');
-}
-
-/* ----- Curva acumulada (SVG) ----- */
-function drawCurve(moves, last) {
-  const el = $('#curve'), byDay = {};
-  moves.forEach(m => { const k = m.date.getTime(); byDay[k] = (byDay[k] || 0) + m.q; });
-  const days = Object.keys(byDay).map(Number).sort((a, b) => a - b);
-  if (!days.length) { el.innerHTML = '<div class="empty">Sin movimientos con fecha</div>'; return; }
-  let acc = 0;
-  const pts = days.map(t => ({ t, d: byDay[t], v: acc += byDay[t] }));
-  const W = 640, H = 260, L = 48, R = 20, Tp = 24, B = 28;
-  const x0 = days[0], x1 = days[days.length - 1] || x0 + 1;
-  const raw = acc / 4, mag = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 2.5, 5, 10].find(m => m * mag >= raw) * mag;
-  const ymax = Math.ceil(acc / step) * step || 1;
-  const X = t => L + (t - x0) / ((x1 - x0) || 1) * (W - L - R), Y = v => Tp + (1 - v / ymax) * (H - Tp - B);
-  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join('');
-  const ticks = Array.from({ length: Math.round(ymax / step) + 1 }, (_, i) => i * step);
-  const xt = [0, .25, .5, .75, 1].map(f => x0 + f * (x1 - x0));
-  const peak = pts.reduce((a, p) => p.d > a.d ? p : a);
-  const lp = pts[pts.length - 1];
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Movimientos acumulados por fecha">
-    <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00D2BE" stop-opacity=".28"/><stop offset="1" stop-color="#00D2BE" stop-opacity="0"/></linearGradient></defs>
-    <g class="axis">${ticks.map(v => `<line class="grid-l" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${v >= 1000 ? fmt(v / 1000) + 'k' : fmt(v)}</text>`).join('')}
-      ${xt.map(t => `<text x="${X(t)}" y="${H - 6}" text-anchor="middle">${dShort(new Date(Math.round(t / 864e5) * 864e5))}</text>`).join('')}</g>
-    <path d="${line}L${X(lp.t)},${Y(0)}L${X(x0)},${Y(0)}Z" fill="url(#ga)"/>
-    <path d="${line}" fill="none" stroke="#00D2BE" stroke-width="2" stroke-linejoin="round"/>
-    <line x1="${X(lp.t)}" x2="${X(lp.t)}" y1="${Tp - 8}" y2="${Y(0)}" stroke="#E10600" stroke-width="1"/>
-    <text x="${X(lp.t) - 6}" y="${Tp - 12}" text-anchor="end" fill="#FF8A7A" font-family="Sora, sans-serif" font-size="11" font-weight="600">${fmt(lp.v)} folios</text>
-    ${[peak, lp].map(p => `<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="4.5" fill="#121824" stroke="#00D2BE" stroke-width="2"/>`).join('')}
-    <g id="hov" style="display:none"><line id="hl" y1="${Tp}" y2="${Y(0)}" stroke="rgba(255,255,255,.25)"/><circle id="hc" r="5" fill="#00D2BE" stroke="#121824" stroke-width="2"/></g>
-    <rect x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent" id="hit"/>
-  </svg><div class="tip" id="ctip"></div>`;
-  $('#cutChip').textContent = `Último: ${dShort(last)}`;
-  const svg = el.querySelector('svg'), tip = $('#ctip'), hov = $('#hov');
-  const move = e => {
-    const b = svg.getBoundingClientRect(), sx = (e.clientX - b.left) * W / b.width;
-    const t = x0 + (sx - L) / (W - L - R) * (x1 - x0);
-    const p = pts.reduce((a, q) => Math.abs(q.t - t) < Math.abs(a.t - t) ? q : a);
-    hov.style.display = ''; $('#hl').setAttribute('x1', X(p.t)); $('#hl').setAttribute('x2', X(p.t));
-    $('#hc').setAttribute('cx', X(p.t)); $('#hc').setAttribute('cy', Y(p.v));
-    const d = new Date(p.t);
-    tip.innerHTML = `<span class="sub">${DIAS[d.getUTCDay()]} ${dShort(d)}</span><b class="num">${fmt(p.v)} acumulado</b><span class="num">+${fmt(p.d)} en el día</span>`;
-    const px = X(p.t) * b.width / W, py = Y(p.v) * b.height / H;
-    tip.style.left = Math.min(px + 12, b.width - tip.offsetWidth) + 'px'; tip.style.top = Math.max(0, py - 60) + 'px'; tip.style.opacity = 1;
-  };
-  $('#hit').addEventListener('pointermove', move);
-  $('#hit').addEventListener('pointerleave', () => { hov.style.display = 'none'; tip.style.opacity = 0; });
-  const first = pts[0];
-  $('#milestones').innerHTML = [
-    ['Primer movimiento', first, 'var(--muted)'], ['Día pico', peak, 'var(--cyan)'], ['Último movimiento', lp, 'var(--muted)']
-  ].map(([l, p, c]) => { const d = new Date(p.t); return `<div><div class="sub" style="color:${c}">${l} · ${dShort(d)}</div><b class="num">${fmt(p.d)}</b><span class="sub">${DIAS[d.getUTCDay()]}</span></div>`; }).join('');
-}
-
-/* ----- Dona por grupo (SVG) ----- */
-function drawDonut(rows, total) {
-  const by = {};
-  rows.forEach(r => by[r.grp] = (by[r.grp] || 0) + r.tot);
-  const order = [...GROUPS.map(g => g[0]), 'Otros'].filter(g => by[g] > 0);
-  const S = 200, R = 82, w = 18, C = 2 * Math.PI * R, gap = 2;
-  let off = 0;
-  const arcs = order.map(g => {
-    const len = by[g] / total * C, a = `<circle class="seg" data-g="${esc(g)}" cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="${colorOf(g)}" stroke-width="${w}" stroke-dasharray="${Math.max(0, len - gap)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 ${S / 2} ${S / 2})" style="cursor:pointer;transition:stroke-width .15s"/>`;
-    off += len; return a;
-  }).join('');
-  $('#donut').innerHTML = `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" aria-label="Distribución por grupo">${arcs}
-    <text x="100" y="98" text-anchor="middle" fill="#E1E2EB" font-family="Sora, sans-serif" font-weight="700" font-size="24">${fmt(total)}</text>
-    <text x="100" y="118" text-anchor="middle" fill="#8A97AD" font-family="Sora, sans-serif" font-weight="700" font-size="9" letter-spacing=".08em">ENTREGADAS</text></svg><div class="tip" id="dtip"></div>`;
-  $('#donutTotal').textContent = `Total ${fmt(total)}`;
-  $('#legend').innerHTML = order.map(g => `<li><i style="background:${colorOf(g)}"></i><span>${esc(g)}</span><span class="num">${fmt(by[g])}</span><span class="num">${pct(by[g], total).toFixed(1)}%</span></li>`).join('');
-  const tip = $('#dtip'), box = $('#donut').parentElement;
-  $('#donut').querySelectorAll('.seg').forEach(s => {
-    s.addEventListener('pointermove', e => {
-      const g = s.dataset.g, b = box.getBoundingClientRect();
-      s.style.strokeWidth = w + 4;
-      tip.innerHTML = `<span class="sub">${esc(g)}</span><b class="num">${fmt(by[g])}</b><span class="num">${pct(by[g], total).toFixed(1)}% del total</span>`;
-      tip.style.left = (e.clientX - b.left + 12) + 'px'; tip.style.top = (e.clientY - b.top - 50) + 'px'; tip.style.opacity = 1;
-    });
-    s.addEventListener('pointerleave', () => { s.style.strokeWidth = w; tip.style.opacity = 0; });
-  });
-}
-
-/* ============================== eventos ============================== */
-$('#q').addEventListener('input', e => { view.q = e.target.value; view.page = 0; renderTable(); });
-$('#grp').addEventListener('change', e => { view.grp = e.target.value; view.page = 0; renderTable(); });
-$('#pg').addEventListener('click', e => { const p = e.target.closest('button')?.dataset.p; if (p != null) { view.page = +p; renderTable(); } });
-$('#btnCsv').addEventListener('click', () => {
-  const head = ['Grupo', 'Categoría', 'Folios', 'Producido', 'Entregado paquete', 'Acreditado módulo', 'Total entregado', 'Sobrante bodega', 'Sobrante módulo', 'Total sobrante', '% uso'];
-  const lines = filtered().map(r => [r.grp, r.cat, r.folios.join(' / '), r.prod, r.paq, r.mod, r.tot, r.sb, r.sm, r.st, r.uso.toFixed(1)]);
-  const csv = '﻿' + [head, ...lines].map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: 'corte-acreditaciones.csv' });
-  a.click(); URL.revokeObjectURL(a.href);
-});
-// Cargar Excel locales: reemplaza solo los archivos que se suban
-$('#fileIn').addEventListener('change', e => { loadLocal([...e.target.files]); e.target.value = ''; });
-
-/* ============================== carga ============================== */
-const RAW = {};
-function build(source) {
-  try {
-    if (!RAW.final) throw new Error('Falta el archivo del CORTE FINAL.');
-    DATA = { final: parseFinal(RAW.final), diario: RAW.diario ? parseDiario(RAW.diario) : [], devol: RAW.devol ? parseDevol(RAW.devol) : [] };
-    if (!DATA.final.rows.length) throw new Error('No encontré la tabla "CATEGORIA / PRODUCIDO / TOTAL ACREDITACIONES" en el corte final.');
-    render();
-    $('#source').textContent = source;
-    $('#status').classList.add('hide');
-  } catch (err) { showError(err.message); }
-}
-function showError(msg) {
-  const local = location.protocol === 'file:';
-  $('#status').classList.remove('hide');
-  $('#status .box').innerHTML = local
-    ? `<div class="label" style="color:var(--amber)">Abre el reporte con el lanzador</div>
-       <p class="sub">El navegador no deja leer la carpeta <span class="mono">data/</span> cuando abres el index.html con doble clic.<br><br>
-       Cierra esta pestaña y da doble clic en <b style="color:var(--ink)">Abrir reporte.command</b> (en la misma carpeta). Leerá los Excel de <span class="mono">data/</span> automáticamente.</p>
-       <p class="sub">En GitHub Pages carga solo, sin lanzador.</p>`
-    : `<div class="label" style="color:var(--red-ink)">No se pudieron cargar los datos</div>
-       <p class="sub">${esc(msg)}</p>
-       <p class="sub">Revisa que existan <span class="mono">${Object.values(FILES).join(', ')}</span> en el repositorio.</p>`;
-}
-async function loadLocal(files) {
-  const names = [];
-  for (const f of files) { const wb = XLSX.read(await f.arrayBuffer(), { sheetRows: 1500 }); RAW[kindOf(wb)] = wb; names.push(f.name); }
-  build(`Archivos locales: ${names.join(', ')}`);
-}
-(async () => {
-  try {
-    const stamp = '?v=' + Date.now(); // evita caché al actualizar los Excel
-    await Promise.all(Object.entries(FILES).map(async ([k, url]) => {
-      const res = await fetch(url + stamp);
-      if (!res.ok) throw new Error(`No encontré ${url} (${res.status}).`);
-      RAW[k] = XLSX.read(await res.arrayBuffer(), { sheetRows: 1500 });
-    }));
-    build(`Fuente: ${Object.values(FILES).join(' · ')} · leído ${new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}`);
-  } catch (err) { showError(err.message); }
-})();
-</script>
 </body>
 </html>
