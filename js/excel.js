@@ -202,6 +202,19 @@ export function sumCol(book, pattern, requiredPattern) {
   return total;
 }
 
+// Hojas de folios: una fila sin CATEGORIA debajo de una categoría es un rango extra (otra producción) de esa categoría.
+// Devuelve Map(fila → categoría a la que pertenece).
+export function extraRows(table) {
+  const catCol = colOf(table, /^CATEGORIA$/), extras = new Map();
+  if (!catCol || !table.cols.some(c => /^FOLIO/.test(norm(c.name)))) return extras;
+  let category = '';
+  for (const row of table.rows) {
+    if (!blank(row[catCol.c])) category = clean(row[catCol.c]);
+    else if (category) extras.set(row, category);
+  }
+  return extras;
+}
+
 /* ---------- tipos de acreditación ---------- */
 
 const OTHER_GROUP = GROUPS.at(-1);

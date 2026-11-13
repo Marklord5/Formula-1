@@ -68,11 +68,19 @@ const yAxis = (yMax, step, y, left, right) => Array.from({ length: Math.round(yM
   `<line class="grid-l" x1="${left}" x2="${right}" y1="${y(v)}" y2="${y(v)}"/>
    <text x="${left - 8}" y="${y(v) + 4}" text-anchor="end">${compact(v)}</text>`).join('');
 
-// Fechas del eje X: inicio, cuartos y fin (solo inicio, mitad y fin si la gráfica es angosta)
+const LABEL_SPACING = 64; // px mínimos entre fechas del eje X
+
+// Fechas del eje X: tantas como quepan (cada N días), siempre con el primer y el último día
 function xAxis(t0, days, x, width, height) {
-  const ticks = [...new Set((width < 500 ? [0, .5, 1] : [0, .25, .5, .75, 1]).map(f => Math.round(f * (days - 1))))].map(i => t0 + i * DAY_MS);
+  const every = Math.max(1, Math.ceil((days - 1) / Math.max(1, Math.floor(width / LABEL_SPACING) - 1)));
+  const offsets = [];
+  for (let i = 0; i < days - 1; i += every) offsets.push(i);
+  if (offsets.length > 1 && days - 1 - offsets.at(-1) < every * .7) offsets.pop(); // no encimar con el último
+  offsets.push(days - 1);
+  const ticks = offsets.map(i => t0 + i * DAY_MS);
   const anchor = i => i === 0 ? 'start' : i === ticks.length - 1 ? 'end' : 'middle';
-  return ticks.map((t, i) => `<text x="${x(t)}" y="${height - 8}" text-anchor="${anchor(i)}">${shortDate(new Date(t))}</text>`).join('');
+  return ticks.map((t, i) => `<line class="tick" x1="${x(t)}" x2="${x(t)}" y1="${height - 30}" y2="${height - 25}"/>
+    <text x="${x(t)}" y="${height - 8}" text-anchor="${anchor(i)}">${shortDate(new Date(t))}</text>`).join('');
 }
 
 /* ---------- resumen general: curva acumulada y dona por tipo ---------- */
@@ -80,7 +88,7 @@ function xAxis(t0, days, x, width, height) {
 // Curva acumulada de entregas; points = [{ t, v, n }] por día. Guía y punto de cada día aparecen con :hover (CSS).
 export function curveHtml(points, containerWidth) {
   if (!points.length) return '<div class="empty">No hay fechas en el Corte Diario.</div>';
-  const W = Math.max(300, (containerWidth || 640) - 2), H = 260, L = 44, R = 16, T = 30, B = 30;
+  const W = Math.max(300, (containerWidth || 640) - 2), H = 330, L = 44, R = 16, T = 30, B = 30;
   let running = 0;
   const pts = points.map(p => ({ ...p, total: running += p.v }));
   const first = pts[0], last = pts.at(-1), peak = pts.reduce((a, p) => p.v > a.v ? p : a);

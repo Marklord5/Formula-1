@@ -1,7 +1,7 @@
 // Paso 3: tarjetas de resumen por hoja y desglose con las tablas del Excel
 import { GLOSSARY, GROUPS } from './config.js';
 import { $, clone, esc, fmt, pct, norm, num, plural } from './utils.js';
-import { colOf, cellText, isWarehouse, sheetGroup } from './excel.js';
+import { colOf, cellText, isWarehouse, sheetGroup, extraRows } from './excel.js';
 
 /* ---------- búsqueda ---------- */
 
@@ -112,12 +112,14 @@ function tableCard(table, sheet, q) {
   const rows = matchRows(table, q);
   if (!rows.length && (q || table.rows.length)) return '';
   const { meta, cols } = table;
-  const solCol = colOf(table, /^SOLICITANTE$/);
+  const solCol = colOf(table, /^SOLICITANTE$/), catCol = colOf(table, /^CATEGORIA$/);
   const inWarehouse = row => solCol && isWarehouse(row[solCol.c]);
+  const extras = extraRows(table);
   const chips = [
     ...(meta.extra ? [`<span class="chip amber">${meta.extra}</span>`] : []),
     ...meta.nums.map(n => `<span class="chip cyan">Producido ${fmt(n)}</span>`),
     ...(rows.some(inWarehouse) ? ['<span class="chip warehouse">Filas BODEGA = quedaron en bodega, no acreditadas</span>'] : []),
+    ...(rows.some(r => extras.has(r)) ? ['<span class="chip extra">Extra = rango de folios adicional (otra producción) de la categoría de arriba</span>'] : []),
     ...meta.folios.map(f => `<span class="chip slate mono">Folios ${esc(f)}</span>`),
     ...meta.notes.map(n => n === '✅' ? '<span class="chip green">✅ Completo</span>' : `<span class="chip amber">${esc(n)}</span>`)
   ].join('');
@@ -128,7 +130,11 @@ function tableCard(table, sheet, q) {
     const meaning = GLOSSARY[norm(c.name)];
     return `<th class="${c.n ? 'n' : ''}"${meaning ? ` title="${esc(meaning)}"` : ''}>${esc(c.name)}</th>`;
   };
-  const body = rows.map(r => `<tr${inWarehouse(r) ? ' class="warehouse"' : ''}>${cols.map(c => `<td class="${cellClass(c)}">${highlight(cellText(r[c.c], c), q)}</td>`).join('')}</tr>`).join('')
+  const rowClass = r => inWarehouse(r) ? ' class="warehouse"' : extras.has(r) ? ' class="extra"' : '';
+  const cellHtml = (r, c) => c === catCol && extras.has(r)
+    ? `<span class="chip extra">Extra</span> <span class="extra-of">de ${esc(extras.get(r))}</span>`
+    : highlight(cellText(r[c.c], c), q);
+  const body = rows.map(r => `<tr${rowClass(r)}>${cols.map(c => `<td class="${cellClass(c)}">${cellHtml(r, c)}</td>`).join('')}</tr>`).join('')
     || `<tr><td colspan="${cols.length}" class="empty">Sin movimientos registrados</td></tr>`;
   const foot = table.total && !q
     ? `<tfoot><tr>${cols.map(c => `<td class="${c.n ? 'n num' : ''}">${esc(cellText(table.total[c.c], c))}</td>`).join('')}</tr></tfoot>` : '';

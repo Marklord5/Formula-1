@@ -97,8 +97,11 @@ section { margin-top: 1.5rem }
 .tone-0 { --tone: var(--c-ent) }
 .tone-1 { --tone: var(--c-dev) }
 .tone-2 { --tone: var(--c-alt) }
-.overview { display: grid; grid-template-columns: 7fr 5fr; gap: 1.5rem; align-items: start }
-.overview > * { min-width: 0 }
+/* Las dos tarjetas a la misma altura; la dona crece para ocupar su tarjeta */
+.overview { display: grid; grid-template-columns: 7fr 5fr; gap: 1.5rem }
+.overview > * { min-width: 0; display: flex; flex-direction: column }
+.overview .milestones { margin-top: auto }
+.tick { stroke: rgba(255,255,255,.18) }
 #curveFill stop { stop-color: var(--cyan) }
 .curve-area { fill: url(#curveFill) }
 .curve-line { fill: none; stroke: var(--cyan); stroke-width: 2; stroke-linejoin: round }
@@ -112,15 +115,15 @@ section { margin-top: 1.5rem }
 .milestones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line) }
 .milestones b { display: block; font: 700 20px/28px var(--display) }
 .milestones .peak { color: var(--cyan) }
-.donut-wrap { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; align-items: center }
-#donut svg { display: block; width: 200px; height: 200px }
+.donut-wrap { flex: 1; display: grid; justify-items: center; align-content: space-evenly; gap: 1.5rem }
+#donut svg { display: block; width: 260px; height: 260px }
 .seg { fill: none; stroke: var(--tone); stroke-width: 18px; transition: stroke-width .15s }
 .seg:hover { stroke-width: 22px }
 .donut-total, .donut-label { text-anchor: middle; font-family: var(--display); font-weight: 700 }
 .donut-total { fill: var(--ink); font-size: 24px }
 .donut-label { fill: var(--muted); font-size: 9px; letter-spacing: .08em }
-.donut-legend { list-style: none; padding: 0; display: grid; gap: .6rem; font-size: 12px }
-.donut-legend li { display: grid; grid-template-columns: 10px 1fr auto auto; gap: .6rem; align-items: center }
+.donut-legend { list-style: none; padding: 0; display: grid; gap: .5rem; font-size: 13px; width: 100% }
+.donut-legend li { display: grid; grid-template-columns: 10px 1fr auto auto; gap: .75rem; align-items: center; padding: .55rem .75rem; border-radius: var(--r-sm); background: var(--input) }
 .donut-legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--tone) }
 .donut-legend span:last-child { color: var(--muted); min-width: 44px; text-align: right }
 
@@ -189,6 +192,10 @@ tbody tr:hover { box-shadow: inset 2px 0 0 var(--cyan); background: var(--elev) 
 /* Filas de BODEGA: stock que no salió, se atenúan para no leerse como entregas */
 tbody tr.warehouse td { color: var(--muted); font-style: italic }
 tbody tr.warehouse { box-shadow: inset 2px 0 0 rgba(255,255,255,.2) }
+/* Rangos extra (otra producción) de la categoría de arriba en las hojas de folios */
+.chip.extra { color: var(--amber); background: rgba(255,184,0,.12); border-color: rgba(255,184,0,.35) }
+tbody tr.extra { box-shadow: inset 2px 0 0 var(--amber) }
+tbody tr.extra .extra-of { color: var(--muted); font-weight: 400; font-size: 12px }
 tfoot td { font: 700 13px var(--display); color: var(--cyan-hi); border-top: 1px solid rgba(0,210,190,.35); background: rgba(0,210,190,.06) }
 mark { background: rgba(255,184,0,.3); color: inherit; border-radius: 2px }
 
@@ -247,7 +254,7 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
   .hero { flex-direction: column; align-items: flex-start }
   .event { display: none }
   .tabs, .steps, .groups, .overview { grid-template-columns: 1fr; gap: .5rem }
-  .donut-wrap { grid-template-columns: 1fr; justify-items: center } .donut-legend { width: 100% }
+  #donut svg { width: 220px; height: 220px }
   .charts { grid-template-columns: 1fr; gap: 1rem }
   .hb-row { grid-template-columns: 96px 1fr 52px; gap: .5rem }
   .toolbar, .toolbar .right { width: 100% } input[type=search] { width: 100% }
