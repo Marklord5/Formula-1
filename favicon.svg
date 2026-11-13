@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Carrito de F1 (vista lateral) para la pestaña del navegador -->
+  <path d="M2 21h14v4h-5v11H7V25H2z" fill="#E10600"/>
+  <path d="M5 40l3-7 14-2 6-6h9l4 6 13 3 9 4v3H5z" fill="#E10600"/>
+  <path d="M29 30l3-3h4l2 3z" fill="#fff"/>
+  <path d="M52 41h11v4H52z" fill="#E10600"/>
+  <circle cx="16" cy="42" r="8" fill="#1B1F27" stroke="#fff" stroke-width="2"/>
+  <circle cx="47" cy="42" r="7" fill="#1B1F27" stroke="#fff" stroke-width="2"/>
+  <circle cx="16" cy="42" r="2.5" fill="#fff"/>
+  <circle cx="47" cy="42" r="2.2" fill="#fff"/>
+</svg>
