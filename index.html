@@ -48,6 +48,10 @@
       <h1>Acreditaciones F1 2026</h1>
       <p>Resumen del corte de acreditaciones con la información de los 3 Excel: lo que se produjo, lo que se entregó, lo que sobró y lo que regresó. Todo sale directo de los archivos y se actualiza solo.</p>
     </div>
+    <div class="downloads">
+      <span class="label">Descargar los Excel</span>
+      <div class="download-list" id="downloads"></div>
+    </div>
   </div>
 
   <div class="steps">
@@ -169,6 +173,12 @@
       </table></div>
     </details>
   </article>
+</template>
+
+<template id="tpl-download">
+  <a class="btn" download>
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg><span data-f="name"></span>
+  </a>
 </template>
 
 <template id="tpl-legend">

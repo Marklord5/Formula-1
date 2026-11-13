@@ -40,6 +40,7 @@ Da doble clic en **`Abrir reporte.command`**: levanta un servidor local y abre e
 
 ## Cómo está organizada la página
 
+0. **Descargar los Excel**: un botón por archivo en el encabezado (sale de `FILES`; si agregas un Excel, aparece solo).
 1. **Totales** arriba: PRODUCIDO, TOTAL ACREDITACIONES y TOTAL SOBRANTE (suma de esas columnas del Corte Final) y Devueltos (suma de CANTIDAD del Excel de devolución).
 2. **Por tipo de acreditación**: el Corte Final separado en Montaje y Desmontaje, Hospitalidades y Operación.
 3. **Paso 1 · Elige el Excel**: Corte Final, Corte Diario o Devolución.

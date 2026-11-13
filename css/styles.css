@@ -59,6 +59,8 @@ section { margin-top: 1.5rem }
 .hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--line) }
 .hero p { color: var(--ink-2); max-width: 680px; margin-top: .5rem }
 .hero .meta { display: flex; gap: .75rem; align-items: center; margin-bottom: .75rem; color: var(--muted); font-size: 12px }
+.downloads { display: grid; gap: .5rem; justify-items: end }
+.download-list { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-top: 1.5rem }
 .step { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1rem; border-radius: var(--r); background: var(--input); border: 1px solid var(--line) }
 .step b { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--red); color: #fff; font: 700 12px var(--display) }
@@ -252,6 +254,7 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
   .wrap { padding: 0 1rem } .grid { gap: 1rem } .s3 { grid-column: span 12 }
   h1 { font: 700 30px/38px var(--display); letter-spacing: -.02em }
   .hero { flex-direction: column; align-items: flex-start }
+  .downloads { justify-items: start } .download-list { justify-content: flex-start }
   .event { display: none }
   .tabs, .steps, .groups, .overview { grid-template-columns: 1fr; gap: .5rem }
   #donut svg { width: 220px; height: 220px }

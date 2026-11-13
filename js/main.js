@@ -4,7 +4,7 @@ import { $, fill, esc } from './utils.js';
 import { parseBook } from './excel.js';
 import { chartsHtml, initTooltip } from './charts.js';
 import { renderSheets, renderBody } from './sheets.js';
-import { renderKpis, renderGroups, renderTrend, renderDistribution, renderTabs } from './overview.js';
+import { renderKpis, renderGroups, renderTrend, renderDistribution, renderTabs, renderDownloads } from './overview.js';
 
 let books = [];
 const state = { file: 0, sheet: -1, query: '', all: false }; // sheet = hoja abierta (-1: ninguna)
@@ -102,6 +102,7 @@ function restoreFromHash() {
 async function start() {
   const urls = FILES.map(f => f.url);
   fill(document, { requiredFiles: urls.join(', ') });
+  renderDownloads(FILES);
   try {
     const stamp = `?v=${Date.now()}`; // evita la caché al actualizar los Excel
     books = await Promise.all(FILES.map(file => loadBook(file, stamp)));

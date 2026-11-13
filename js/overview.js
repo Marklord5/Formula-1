@@ -77,6 +77,15 @@ export function renderDistribution(books) {
   }));
 }
 
+// Un botón de descarga por archivo (se pinta antes de leer los datos)
+export function renderDownloads(files) {
+  $('#downloads').replaceChildren(...files.map(({ name, url }) => {
+    const link = clone('tpl-download', { name });
+    Object.assign(link, { href: url, download: fileName(url), title: `Descargar ${fileName(url)}` });
+    return link;
+  }));
+}
+
 export function renderTabs(books, state) {
   $('#tabs').replaceChildren(...books.map((book, i) => {
     const tab = clone('tpl-tab', { name: book.name, detail: `${plural(book.sheets.length, 'hoja')} · ${fileName(book.url)}` });
