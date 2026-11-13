@@ -351,20 +351,13 @@ footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; hei
   .car.c1 { left: 18% } .car.c2 { left: 34% } .car.c3 { left: 55% } .car.c4 { left: 72% }
 }
 
-/* ===== Fondo de carreras (sutil): circuito tenue a la derecha, cuadrícula de píxeles y un brillo rojo arriba ===== */
+/* ===== Fondo de carreras (sutil): circuito tenue a lo ancho, un poco abajo, cuadrícula de píxeles y un brillo rojo arriba ===== */
 body {
   background:
-    url(../img/bg-circuit.svg) right -140px top 120px / 980px auto no-repeat fixed,
+    url(../img/bg-circuit.svg) center top 240px / 94% auto no-repeat fixed,
     radial-gradient(rgba(255,255,255,.035) 1px, transparent 1.5px) 0 0 / 24px 24px fixed,
-    radial-gradient(1200px 600px at 100% 0, rgba(225,6,0,.06), transparent 60%) fixed,
+    radial-gradient(1200px 600px at 50% 0, rgba(225,6,0,.06), transparent 60%) fixed,
     var(--canvas)
 }
-@media (max-width: 767px) { body { background-size: 640px auto, 24px 24px, auto, auto; background-position: right -220px top 160px, 0 0, 0 0, 0 0 } }
-/* Carritos pixel dando vueltas al circuito (capa aparte, encima del fondo y debajo del contenido) */
-body::before {
-  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: url(../img/bg-cars.svg) right -140px top 120px / 980px auto no-repeat
-}
-@media (max-width: 767px) { body::before { background-size: 640px auto; background-position: right -220px top 160px } }
-@media (prefers-reduced-motion: reduce) { body::before { display: none } }
-@media print { body { background: var(--canvas) } body::before { display: none } }
+@media (max-width: 767px) { body { background-size: 1024px auto, 24px 24px, auto, auto; background-position: center top 260px, 0 0, 0 0, 0 0 } }
+@media print { body { background: var(--canvas) } }
