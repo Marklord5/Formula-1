@@ -251,12 +251,16 @@ mark { background: rgba(255,184,0,.3); color: inherit; border-radius: 2px }
 
 footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem 0 2rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: 12px }
 
-/* ===== Responsive ===== */
-/* ===== Pista retro bajo la barra superior: carritos en pixel art que se rebasan ===== */
+/* ===== Pista retro dentro de la barra superior (a la derecha del título): carritos pixel que se rebasan ===== */
 .race {
-  position: relative; height: 42px; overflow: hidden; background: #171C27;
-  border-top: 1px solid var(--line); image-rendering: pixelated
+  position: relative; flex: 1; min-width: 0; height: 40px; overflow: hidden; background: #171C27;
+  border: 1px solid var(--line); border-radius: 6px; image-rendering: pixelated; container-type: inline-size;
+  /* las orillas se desvanecen: los carritos entran y salen suavemente */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)
 }
+/* El título no se encoge; la pista toma el espacio que sobra */
+.top .brand, .top .event { flex: none; white-space: nowrap }
 /* Pianos arriba y abajo + línea central; se recorren a saltos como en un juego de 8 bits */
 .race::before {
   content: ''; position: absolute; inset: 0;
@@ -273,7 +277,7 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
 }
 .race .defs { position: absolute }
 .car {
-  position: absolute; left: 0; top: 6px; width: 32px; height: 16px; z-index: 1;
+  position: absolute; left: 0; top: 5px; width: 32px; height: 16px; z-index: 1;
   animation: race-lap var(--lap) linear var(--start) infinite
 }
 .car svg { display: block; width: 100%; height: 100%; animation: race-engine .2s steps(2) infinite }
@@ -283,10 +287,10 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
   background: repeating-linear-gradient(90deg, transparent 0 4px, currentColor 4px 8px); opacity: .45
 }
 .car.c1 { color: var(--red);   --lap: 9s;    --start: -2s }
-.car.c2 { color: var(--cyan);  --lap: 10.5s; --start: -7s;  top: 21px }
+.car.c2 { color: var(--cyan);  --lap: 10.5s; --start: -7s;  top: 19px }
 .car.c3 { color: var(--amber); --lap: 12s;   --start: -4s }
-.car.c4 { color: #9575E8;      --lap: 13.5s; --start: -10s; top: 21px }
-@keyframes race-lap { from { transform: translateX(-60px) } to { transform: translateX(calc(100vw + 20px)) } }
+.car.c4 { color: #9575E8;      --lap: 13.5s; --start: -10s; top: 19px }
+@keyframes race-lap { from { transform: translateX(-60px) } to { transform: translateX(calc(100cqw + 20px)) } }
 @keyframes race-road { to { background-position: -16px 0, -16px 100%, -24px 50% } }
 @keyframes race-engine { 50% { transform: translateY(-1px) } }
 /* ===== Más detalles retro en el resto del sitio ===== */
@@ -319,6 +323,7 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
 /* Pie de página con orilla a cuadros, como la meta */
 footer { position: relative; border-top: 0 }
 footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: var(--checker) 0 0 / 6px 6px; opacity: .35 }
+/* ===== Responsive ===== */
 @media (max-width: 1100px) { .s3 { grid-column: span 6 } }
 @media (max-width: 767px) {
   .wrap { padding: 0 1rem } .grid { gap: 1rem } .s3 { grid-column: span 12 }
@@ -326,6 +331,7 @@ footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; hei
   .hero { flex-direction: column; align-items: flex-start }
   .downloads { justify-items: start } .download-list { justify-content: flex-start }
   .event { display: none }
+  .race .c3, .race .c4 { display: none } /* pista corta: solo dos carritos */
   .tabs, .steps, .groups, .overview { grid-template-columns: 1fr; gap: .5rem }
   #donut svg { width: 220px; height: 220px }
   .charts { grid-template-columns: 1fr; gap: 1rem }
