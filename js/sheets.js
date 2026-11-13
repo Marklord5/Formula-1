@@ -1,7 +1,7 @@
 // Paso 3: tarjetas de resumen por hoja y desglose con las tablas del Excel
 import { GLOSSARY, GROUPS } from './config.js';
 import { $, clone, esc, fmt, pct, norm, num, plural } from './utils.js';
-import { colOf, cellText, isWarehouse, sheetGroup, extraRows } from './excel.js';
+import { colOf, cellText, isWarehouse, sheetGroup, extraRows, returnedCol, returnedProducedCol } from './excel.js';
 
 /* ---------- búsqueda ---------- */
 
@@ -24,12 +24,21 @@ function highlight(text, q) {
 /* ---------- tarjetas de hoja ---------- */
 
 function sheetSummary(sheet, isReturns) {
-  let prod = 0, extra = 0, ent = 0, bod = 0, dev = 0, rows = 0, ranges = 0, outflow = false;
+  let prod = 0, extra = 0, ent = 0, bod = 0, dev = 0, devMatched = 0, devProd = 0, rows = 0, ranges = 0, outflow = false;
   for (const table of sheet.tables) {
     rows += table.rows.length;
     const qtyCol = table.cols.find(c => norm(c.name) === 'CANTIDAD'), solCol = colOf(table, /^SOLICITANTE$/);
-    if (isReturns) { if (qtyCol) table.rows.forEach(r => dev += num(r[qtyCol.c]) || 0); continue; }
-    const prodCol = colOf(table, /^(TOTAL )?PRODUCIDO$/), deliveredCol = colOf(table, /^TOTAL ACREDITACIONES$/) || qtyCol;
+    if (isReturns) {
+      const devCol = returnedCol(table), devProdCol = returnedProducedCol(table);
+      for (const r of table.rows) {
+        const returned = devCol ? num(r[devCol.c]) || 0 : 0, produced = devProdCol ? num(r[devProdCol.c]) || 0 : 0;
+        dev += returned;
+        // El % devuelto solo compara filas que traen CANTIDAD PRODUCIDA
+        if (produced) { devMatched += returned; devProd += produced; }
+      }
+      continue;
+    }
+    const prodCol = colOf(table, /^(TOTAL )?PRODUCIDO$/), deliveredCol = colOf(table, /^TOTAL (ACREDITACIONES|ENTREGADO)$/) || qtyCol;
     if (prodCol) table.rows.forEach(r => prod += num(r[prodCol.c]) || 0);
     else if (table.meta.nums.length) {
       prod += table.meta.nums[0];
@@ -45,7 +54,7 @@ function sheetSummary(sheet, isReturns) {
       if (solCol && isWarehouse(r[solCol.c])) bod += v; else ent += v;
     }
   }
-  return { prod, extra, ent, bod, dev, rows, ranges, outflow, blocks: sheet.tables.length };
+  return { prod, extra, ent, bod, dev, devMatched, devProd, rows, ranges, outflow, blocks: sheet.tables.length };
 }
 
 // Cifra principal de la tarjeta según lo que tenga la hoja
@@ -56,7 +65,9 @@ function headline(sheet, s) {
       ? { value: items.length, unit: 'cifras', detail: items.slice(0, 2).map(i => `${i.label} ${fmt(i.value)}`).join(' · ') }
       : { value: sheet.raw.length, unit: 'datos', detail: 'Hoja sin tabla' };
   }
-  if (s.dev) return { value: s.dev, unit: 'devueltos', detail: plural(s.rows, 'registro') };
+  if (s.dev) return { value: s.dev, unit: 'devueltos', detail: s.devProd
+    ? `${fmt(s.devMatched)} de ${fmt(s.devProd)} producidas (${pct(s.devMatched, s.devProd)})${s.dev > s.devMatched ? ` · ${fmt(s.dev - s.devMatched)} sin dato de producido` : ''}`
+    : plural(s.rows, 'registro') };
   // En bodega = producido − lo que salió (filas BODEGA + folios que el Excel no registra)
   const stock = s.outflow ? Math.max(0, s.prod - s.ent) : s.bod;
   if (s.ent && s.prod) return {
@@ -95,8 +106,10 @@ function sheetCard(sheet, index, book, state) {
 // Tarjetas agrupadas por tipo de acreditación. Cada tipo es un recuadro; los recuadros se acomodan lado a lado
 // (crecen según cuántas hojas tienen) para no dejar huecos. Si todas son del mismo tipo, van sin recuadro.
 export function renderSheets(book, state) {
-  // El Corte Final mezcla todos los tipos en cada hoja: ahí no se agrupa
-  const indexed = book.sheets.map((sheet, i) => ({ sheet, i, group: book.kind === 'final' ? GROUPS[0] : sheetGroup(sheet) }));
+  // Solo el Corte Diario y Devolución tienen una hoja por tipo; el Corte Final mezcla tipos en cada hoja
+  // y el Corte Hospitalidades es todo de un tipo, así que esos no se agrupan
+  const grouped = ['daily', 'returns'].includes(book.kind);
+  const indexed = book.sheets.map((sheet, i) => ({ sheet, i, group: grouped ? sheetGroup(sheet) : GROUPS[0] }));
   const sections = GROUPS.map(group => ({ group, items: indexed.filter(x => x.group === group) })).filter(s => s.items.length);
   const cards = items => items.map(({ sheet, i }) => sheetCard(sheet, i, book, state));
   const boxes = sections.length > 1 ? sections.map(({ group, items }) => {

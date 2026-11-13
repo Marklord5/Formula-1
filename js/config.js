@@ -3,7 +3,8 @@
 export const FILES = [
   { kind: 'final',   name: 'Corte Final',  url: 'data/corte-final.xlsx'  },
   { kind: 'daily',   name: 'Corte Diario', url: 'data/corte-diario.xlsx' },
-  { kind: 'returns', name: 'Devolución',   url: 'data/devolucion.xlsx'   }
+  { kind: 'returns', name: 'Devolución',   url: 'data/devolucion.xlsx'   },
+  { kind: 'hospitality', name: 'Corte Hospitalidades', url: 'data/corte-hospitalidades.xlsx' }
 ];
 
 // Qué significa cada columna (aparece al pasar el mouse por el encabezado de la tabla)
@@ -20,7 +21,13 @@ export const GLOSSARY = {
   'CANTIDAD': 'Número de acreditaciones del movimiento',
   'FOLIO INICIAL': 'Primer folio entregado',
   'FOLIO FINAL': 'Último folio entregado',
-  'SOBRANTE ENTREGADO': 'Lo que sobró de ese genérico'
+  'SOBRANTE ENTREGADO': 'Lo que sobró de ese genérico',
+  'TOTAL ENTREGADO': 'Cuántas se entregaron',
+  'RESTANTE': 'Lo que quedó sin entregar',
+  'CANTIDAD SOLICITADA': 'Cuántas pidió el solicitante',
+  'SOBRANTE REINTEGRO': 'Lo que se regresó después de entregar',
+  'CANTIDAD DEVUELTA': 'Piezas que regresaron después del evento',
+  'CANTIDAD PRODUCIDA': 'Cuántas se produjeron de esa categoría y día'
 };
 
 // Tipos de acreditación, como los trabaja la oficina. Una categoría u hoja cae en el primer tipo cuyo patrón
@@ -32,4 +39,5 @@ export const GROUPS = [
   { name: 'Operación' }
 ];
 
+export const TOP_HOSPITALITY = 12; // categorías del Corte Hospitalidades antes de "Ver todas"
 export const TOP_PER_GROUP = 6; // categorías por tipo en la gráfica del Corte Final antes de "Ver todas"

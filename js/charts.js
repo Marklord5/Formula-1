@@ -1,11 +1,11 @@
 // Gráficas de cada Excel. Devuelven HTML/SVG; los colores viven en css/styles.css (.c-ent, .c-sob, .c-dev)
-import { GROUPS, TOP_PER_GROUP } from './config.js';
+import { GROUPS, TOP_PER_GROUP, TOP_HOSPITALITY } from './config.js';
 import { $, esc, fmt, pct, plural, norm, num, clean, pretty, sum, parseDate, shortDate, weekday, DAY_MS } from './utils.js';
-import { colOf, eachRow, isWarehouse, categoryRows } from './excel.js';
+import { colOf, eachRow, isWarehouse, categoryRows, returnedCol, returnedProducedCol } from './excel.js';
 
 const DATE_WINDOW = 120 * DAY_MS;
 
-const CHARTS = { final: finalCharts, daily: dailyCharts, returns: returnCharts };
+const CHARTS = { final: finalCharts, daily: dailyCharts, returns: returnCharts, hospitality: hospitalityCharts };
 export const chartsHtml = (book, options) => CHARTS[book.kind](book, options);
 
 /* ---------- piezas comunes ---------- */
@@ -224,27 +224,84 @@ function returnCharts(book) {
   for (const sheet of book.sheets) {
     let sheetTotal = 0;
     for (const table of sheet.tables) {
-      const qtyCol = table.cols.find(c => norm(c.name) === 'CANTIDAD'), catCol = colOf(table, /^CATEGORIA$|^TIPO DE BRAZALETE$/);
+      const qtyCol = returnedCol(table), prodCol = returnedProducedCol(table), catCol = colOf(table, /^CATEGORIA$|^TIPO DE BRAZALETE$/);
       if (!qtyCol) continue;
       for (const row of table.rows) {
         const q = num(row[qtyCol.c]) || 0;
         sheetTotal += q;
         if (!catCol || !q) continue;
-        const entry = byCategory[norm(row[catCol.c]) || 'SIN CATEGORÍA'] ||= { label: pretty(row[catCol.c] || 'Sin categoría'), v: 0 };
+        const entry = byCategory[norm(row[catCol.c]) || 'SIN CATEGORÍA'] ||= { label: pretty(row[catCol.c] || 'Sin categoría'), v: 0, p: 0, vp: 0 };
         entry.v += q;
+        const produced = prodCol ? num(row[prodCol.c]) || 0 : 0;
+        if (produced) { entry.p += produced; entry.vp += q; } // % solo sobre filas con CANTIDAD PRODUCIDA
       }
     }
     if (sheetTotal) bySheet.push({ label: sheet.name, v: sheetTotal });
   }
   const total = sum(bySheet, 'v');
   const top = Object.values(byCategory).sort((a, b) => b.v - a.v).slice(0, 10);
+  // CANTIDAD PRODUCIDA (cuando la hoja la trae) permite decir qué parte de lo producido regresó
   const bars = rows => hbars(rows.map(s => ({
     label: s.label, value: fmt(s.v), segs: [{ v: s.v, tone: 'dev' }],
-    tip: `<b>${esc(s.label)}</b>${tipRow('Devueltos', fmt(s.v))}${tipRow('Del total', pct(s.v, total))}`
+    tip: `<b>${esc(s.label)}</b>${tipRow('Devueltos', fmt(s.v))}${s.p ? tipRow('De lo producido', `${fmt(s.vp)} de ${fmt(s.p)} (${pct(s.vp, s.p)})`) : ''}${tipRow('Del total', pct(s.v, total))}`
   })));
 
-  return card('Devueltos por hoja', `Suma de CANTIDAD en cada hoja del Excel de devolución. En total regresaron <b>${fmt(total)}</b>.`, bars(bySheet)) +
+  return card('Devueltos por hoja', `Suma de CANTIDAD (o CANTIDAD DEVUELTA) en cada hoja del Excel de devolución, sin las tablas de resumen. En total regresaron <b>${fmt(total)}</b>.`, bars(bySheet)) +
     card('Lo que más se devolvió', 'Las 10 categorías o tipos de brazalete con más piezas devueltas.', bars(top));
+}
+
+/* ---------- Corte Hospitalidades: entregado vs restante y entregas por día ---------- */
+
+function hospitalityCharts(book, { all, width }) {
+  const rows = [];
+  eachRow(book, { cat: /^CATEGORIA$/, p: /^TOTAL PRODUCIDO$/, e: /^TOTAL ENTREGADO$/, r: /^RESTANTE$/ }, x => {
+    const [p, e, r] = [x.p, x.e, x.r].map(v => num(v) || 0);
+    if (p || e) rows.push({ cat: clean(x.cat), p, e, r });
+  });
+  rows.sort((a, b) => b.p - a.p);
+  const P = sum(rows, 'p'), E = sum(rows, 'e'), R = sum(rows, 'r');
+  const key = legend([['ent', 'Entregado'], ['sob', 'Restante']]);
+  // Categorías con más entregado que producido: el TOTAL PRODUCIDO del Excel está incompleto
+  const overDelivered = rows.filter(r => r.e > r.p);
+  const warning = overDelivered.length
+    ? ` <b>Ojo:</b> ${plural(overDelivered.length, 'categoría')} tienen más entregado que producido (p. ej. ${esc(overDelivered[0].cat)}); revisa su TOTAL PRODUCIDO en el Excel.` : '';
+
+  const total = card('¿Cuánto se entregó de lo que se produjo?',
+    `Hoja CORTE FINAL del Corte Hospitalidades: se produjeron <b>${fmt(P)}</b>, se entregaron <b>${fmt(E)}</b> (${pct(E, P)}) y quedaron <b>${fmt(R)}</b> sin entregar.${warning}`,
+    `<div class="hb-t total" ${tipAttr(`<b>Total Hospitalidades</b>${tipRow('Producido', fmt(P))}${tipRow('Entregado', `${fmt(E)} (${pct(E, P)})`)}${tipRow('Restante', fmt(R))}`)}>
+      <i class="c-ent" style="width:${E / (E + R) * 100}%"></i><i class="c-sob" style="width:${R / (E + R) * 100}%"></i></div>`,
+    key, 'wide');
+
+  const shown = all ? rows : rows.slice(0, TOP_HOSPITALITY);
+  const toggle = rows.length > TOP_HOSPITALITY
+    ? `<button class="btn more" data-all>${all ? `Ver solo las ${TOP_HOSPITALITY} principales` : `Ver las ${rows.length} categorías`}</button>` : '';
+  const bars = card('Entregado y restante por categoría',
+    'Cada barra es una categoría; la parte verde es lo entregado y la dorada lo que quedó. El número es lo producido.',
+    hbars(shown.map(r => ({
+      label: r.cat, value: fmt(r.p), segs: [{ v: r.e, tone: 'ent' }, { v: r.r, tone: 'sob' }],
+      tip: `<b>${esc(r.cat)}</b>${tipRow('Producido', fmt(r.p))}${tipRow('Entregado', `${fmt(r.e)} (${pct(r.e, r.p)})`)}${tipRow('Restante', fmt(r.r))}`
+    }))) + toggle,
+    key, 'wide');
+
+  return total + bars + card('Entregas por día', ...hospitalityDays(book, width), '', 'wide');
+}
+
+// Hoja ENTREGAS: TOTAL ENTREGADO agrupado por FECHA → [descripción, gráfica]
+function hospitalityDays(book, width) {
+  const byDay = {};
+  let undated = 0;
+  eachRow(book, { d: /^FECHA$/, q: /^TOTAL ENTREGADO$/ }, x => {
+    const q = num(x.q), date = parseDate(x.d);
+    if (!(q > 0)) return;
+    if (!date) { undated += q; return; }
+    const day = byDay[+date] ||= { t: +date, v: 0, n: 0 };
+    day.v += q;
+    day.n++;
+  });
+  const points = Object.values(byDay).sort((a, b) => a.t - b.t);
+  const how = `Suma de TOTAL ENTREGADO de la hoja ENTREGAS por FECHA: <b>${fmt(sum(points, 'v'))}</b> en ${plural(points.length, 'día')}.`
+    + (undated ? ` Otras <b>${fmt(undated)}</b> no tienen fecha y no aparecen aquí.` : '');
+  return [how, `<div class="chart">${columns(points, width)}</div>`];
 }
 
 /* ---------- Tooltip compartido: cualquier elemento con data-tip ---------- */

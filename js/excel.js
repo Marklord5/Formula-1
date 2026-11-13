@@ -195,16 +195,6 @@ export function eachRow(book, need, fn) {
   }
 }
 
-// Suma una columna en todas las tablas (opcionalmente solo las que además tienen otra columna)
-export function sumCol(book, pattern, requiredPattern) {
-  let total = 0;
-  for (const sheet of book.sheets) for (const table of sheet.tables) {
-    if (requiredPattern && !colOf(table, requiredPattern)) continue;
-    const col = colOf(table, pattern);
-    if (col) table.rows.forEach(row => total += num(row[col.c]) || 0);
-  }
-  return total;
-}
 
 // Hojas de folios: una fila sin CATEGORIA debajo de una categoría es un rango extra (otra producción) de esa categoría.
 // Devuelve Map(fila → categoría a la que pertenece).
@@ -217,6 +207,22 @@ export function extraRows(table) {
     else if (category) extras.set(row, category);
   }
   return extras;
+}
+
+/* ---------- devoluciones ---------- */
+
+// Columna devuelta: CANTIDAD o CANTIDAD DEVUELTA. Las tablas laterales son resúmenes del detalle
+// (p. ej. "Resumen · CANTIDAD DEVUELTA" en MONTAJE Y DESMONTAJE): no se suman para no duplicar.
+export const returnedCol = table => table.side ? null : colOf(table, /^CANTIDAD( DEVUELTA)?$/);
+export const returnedProducedCol = table => table.side ? null : colOf(table, /^CANTIDAD PRODUCIDA$/);
+
+export function returnedTotal(book) {
+  let total = 0;
+  for (const sheet of book.sheets) for (const table of sheet.tables) {
+    const col = returnedCol(table);
+    if (col) table.rows.forEach(row => total += num(row[col.c]) || 0);
+  }
+  return total;
 }
 
 /* ---------- tipos de acreditación ---------- */

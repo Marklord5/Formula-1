@@ -1,7 +1,7 @@
 // Totales de arriba, resumen por tipo de acreditación y pestañas de archivo
 import { GROUPS } from './config.js';
 import { $, fill, clone, fmt, pct, plural, pretty, sum, fileName, shortDate, weekday } from './utils.js';
-import { sumCol, categoryRows } from './excel.js';
+import { categoryRows, returnedTotal } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
 // Categorías del Corte Final; Montaje y Desmontaje con lo entregado según el Corte Diario (sin BODEGA)
@@ -16,7 +16,7 @@ export function renderKpis(books) {
     deliveredShare: `${pct(delivered, produced)} de lo producido`,
     leftover: fmt(leftover),
     leftoverShare: `${pct(leftover, produced)} de lo producido`,
-    returned: fmt(sumCol(returns, /^CANTIDAD$/)),
+    returned: fmt(returnedTotal(returns)),
     returnSheets: `${returns.sheets.length} hojas`
   });
 }
@@ -44,7 +44,7 @@ export function renderGroups(books) {
     card.querySelector('.meter i').style.width = `${produced ? Math.min(100, delivered / produced * 100) : 0}%`;
     card.querySelector('details').open = own.length <= OPEN_UP_TO;
     card.querySelector('tbody').replaceChildren(...own.map(r => clone('tpl-concept', {
-      name: pretty(r.cat) + (r.daily ? ' · Corte Diario' : ''), delivered: fmt(r.e), warehouse: fmt(r.w), module: fmt(r.m), produced: fmt(r.p)
+      name: pretty(r.cat), delivered: fmt(r.e), warehouse: fmt(r.w), module: fmt(r.m), produced: fmt(r.p)
     })));
     return card;
   }));

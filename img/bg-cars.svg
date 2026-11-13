@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" shape-rendering="crispEdges" opacity=".8">
+  <!-- Carritos pixel dando vueltas al circuito del fondo (mismo trazado que bg-circuit.svg) -->
+  <defs>
+    <path id="lap" d="M150 480H700c80 0 120-40 120-100 0-50 40-80 80-80 50 0 60-50 30-80L820 120c-30-30-80-30-110 0l-90 90c-30 30-80 30-100-10l-40-70c-20-40-70-50-100-20L200 290c-30 30-80 40-100 90-20 60 0 100 50 100z"/>
+    <symbol id="car" viewBox="0 0 16 8" width="16" height="8"><rect x="0" y="0" width="4" height="1" fill="currentColor"/><rect x="1" y="1" width="1" height="1" fill="currentColor"/><rect x="8" y="1" width="2" height="1" fill="#fff"/><rect x="1" y="2" width="1" height="1" fill="currentColor"/><rect x="6" y="2" width="6" height="1" fill="currentColor"/><rect x="1" y="3" width="13" height="1" fill="currentColor"/><rect x="0" y="4" width="16" height="1" fill="currentColor"/><rect x="1" y="5" width="3" height="1" fill="#07090D"/><rect x="11" y="5" width="3" height="1" fill="#07090D"/><rect x="0" y="6" width="2" height="1" fill="#07090D"/><rect x="2" y="6" width="1" height="1" fill="#C9CED8"/><rect x="3" y="6" width="2" height="1" fill="#07090D"/><rect x="10" y="6" width="2" height="1" fill="#07090D"/><rect x="12" y="6" width="1" height="1" fill="#C9CED8"/><rect x="13" y="6" width="2" height="1" fill="#07090D"/><rect x="1" y="7" width="3" height="1" fill="#07090D"/><rect x="11" y="7" width="3" height="1" fill="#07090D"/></symbol>
+  </defs>
+  <g color="#E10600" transform="scale(1.9) translate(-8 -4)">
+    <use href="#car"/>
+    <animateMotion dur="22s" begin="0s" repeatCount="indefinite" rotate="auto"><mpath href="#lap"/></animateMotion>
+  </g>
+  <g color="#00D2BE" transform="scale(1.9) translate(-8 -4)">
+    <use href="#car"/>
+    <animateMotion dur="25s" begin="-6s" repeatCount="indefinite" rotate="auto"><mpath href="#lap"/></animateMotion>
+  </g>
+  <g color="#FFB800" transform="scale(1.9) translate(-8 -4)">
+    <use href="#car"/>
+    <animateMotion dur="28s" begin="-13s" repeatCount="indefinite" rotate="auto"><mpath href="#lap"/></animateMotion>
+  </g>
+  <g color="#9575E8" transform="scale(1.9) translate(-8 -4)">
+    <use href="#car"/>
+    <animateMotion dur="31s" begin="-21s" repeatCount="indefinite" rotate="auto"><mpath href="#lap"/></animateMotion>
+  </g>
+</svg>

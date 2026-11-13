@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" fill="none" stroke-linejoin="round" stroke-linecap="round">
+  <!-- Fondo: circuito genérico (no es un trazado real), muy tenue -->
+  <defs>
+    <path id="lap" d="M150 480H700c80 0 120-40 120-100 0-50 40-80 80-80 50 0 60-50 30-80L820 120c-30-30-80-30-110 0l-90 90c-30 30-80 30-100-10l-40-70c-20-40-70-50-100-20L200 290c-30 30-80 40-100 90-20 60 0 100 50 100z"/>
+    <pattern id="checker" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#E9ECF2"/><rect x="4" y="4" width="4" height="4" fill="#E9ECF2"/>
+    </pattern>
+  </defs>
+  <use href="#lap" stroke="#fff" stroke-opacity=".05" stroke-width="26"/>
+  <use href="#lap" stroke="#E10600" stroke-opacity=".22" stroke-width="30" stroke-dasharray="10 10" stroke-linecap="butt" mask="none"/>
+  <use href="#lap" stroke="#0B0E14" stroke-width="24"/>
+  <use href="#lap" stroke="#fff" stroke-opacity=".05" stroke-width="24"/>
+  <use href="#lap" stroke="#fff" stroke-opacity=".12" stroke-width="2" stroke-dasharray="14 12"/>
+  <rect x="396" y="467" width="16" height="26" fill="url(#checker)" fill-opacity=".35"/>
+</svg>

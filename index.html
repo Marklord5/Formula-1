@@ -17,6 +17,7 @@
 
 <div id="status" data-state="loading">
   <div class="box loading">
+    <span class="loading-track" aria-hidden="true"><i></i></span>
     <div class="label">Cargando datos</div>
     <p class="sub">Leyendo los archivos de Excel de <span class="mono">data/</span>…</p>
   </div>
@@ -54,9 +55,9 @@
 
   <div class="hero">
     <div>
-      <div class="meta"><span class="chip red">TUS 3 EXCEL</span><span data-f="readAt"></span></div>
+      <div class="meta"><span class="chip red">TUS EXCEL</span><span data-f="readAt"></span></div>
       <h1>Acreditaciones F1 2026</h1>
-      <p>Resumen del corte de acreditaciones con la información de los 3 Excel: lo que se produjo, lo que se entregó, lo que sobró y lo que regresó. Todo sale directo de los archivos y se actualiza solo.</p>
+      <p>Resumen del corte de acreditaciones con la información de tus Excel: lo que se produjo, lo que se entregó, lo que sobró y lo que regresó. Todo sale directo de los archivos y se actualiza solo.</p>
     </div>
     <div class="downloads">
       <span class="label">Descargar los Excel</span>
@@ -65,7 +66,7 @@
   </div>
 
   <div class="steps">
-    <div class="step"><b>1</b><div><strong>Elige un Excel</strong><span>Corte Final, Corte Diario o Devolución.</span></div></div>
+    <div class="step"><b>1</b><div><strong>Elige un Excel</strong><span>Corte Final, Corte Diario, Devolución o Corte Hospitalidades.</span></div></div>
     <div class="step"><b>2</b><div><strong>Mira las gráficas</strong><span>Pasa el mouse sobre una barra para ver el detalle.</span></div></div>
     <div class="step"><b>3</b><div><strong>Abre una hoja o busca</strong><span>Dale clic a la tarjeta de una hoja para ver sus tablas, o busca un nombre, folio o área.</span></div></div>
   </div>
@@ -88,7 +89,7 @@
     </button>
     <button class="card hover kpi s3" data-file="returns">
       <span class="label">Devueltos</span>
-      <span><span class="kpi-val red" data-f="returned"></span><span class="sub">Devolución · suma de CANTIDAD (todas las hojas)</span></span>
+      <span><span class="kpi-val red" data-f="returned"></span><span class="sub">Devolución · suma de lo devuelto (todas las hojas)</span></span>
       <span class="foot"><span class="chip red" data-f="returnSheets"></span><span>Ver Excel →</span></span>
     </button>
   </section>
