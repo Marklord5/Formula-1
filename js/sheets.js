@@ -57,9 +57,11 @@ function headline(sheet, s) {
       : { value: sheet.raw.length, unit: 'datos', detail: 'Hoja sin tabla' };
   }
   if (s.dev) return { value: s.dev, unit: 'devueltos', detail: plural(s.rows, 'registro') };
+  // En bodega = producido − lo que salió (filas BODEGA + folios que el Excel no registra)
+  const stock = s.outflow ? Math.max(0, s.prod - s.ent) : s.bod;
   if (s.ent && s.prod) return {
     value: s.ent, unit: s.outflow ? 'salieron de bodega' : 'entregadas', share: Math.min(100, s.ent / s.prod * 100),
-    detail: `${pct(s.ent, s.prod)} de ${fmt(s.prod)} producidas${s.bod ? ` · ${fmt(s.bod)} en bodega (no acreditadas)` : ''}`
+    detail: `${pct(s.ent, s.prod)} de ${fmt(s.prod)} producidas${stock ? ` · ${fmt(stock)} en bodega` : ''}`
   };
   if (s.ranges) return { value: s.ranges, unit: 'rangos de folios', detail: 'Folio inicial y final de cada categoría' };
   if (s.prod) return { value: s.prod, unit: 'producidas', detail: plural(s.rows, 'fila') };
@@ -110,6 +112,16 @@ export function renderSheets(book, state) {
 
 /* ---------- desglose: las columnas cambian con cada Excel, por eso se arman aquí ---------- */
 
+// Total entregado de un bloque del Corte Diario:
+// entregado = CANTIDAD sin las filas BODEGA; en bodega = producido − entregado (filas BODEGA + folios sin registrar)
+function ownTotal(table) {
+  const qtyCol = colOf(table, /^CANTIDAD$/), solCol = colOf(table, /^SOLICITANTE$/), produced = table.meta.nums[0];
+  if (!qtyCol || !solCol || !produced || !table.rows.length || table.side) return null;
+  const delivered = table.rows.reduce((t, r) => t + (isWarehouse(r[solCol.c]) ? 0 : num(r[qtyCol.c]) || 0), 0);
+  const hasWarehouse = table.rows.some(r => isWarehouse(r[solCol.c]));
+  return { qtyCol, stockCol: colOf(table, /^EXISTENCIA/), delivered, warehouse: Math.max(0, produced - delivered), hasWarehouse };
+}
+
 function tableCard(table, sheet, q) {
   const rows = matchRows(table, q);
   if (!rows.length && (q || table.rows.length)) return '';
@@ -117,6 +129,8 @@ function tableCard(table, sheet, q) {
   const solCol = colOf(table, /^SOLICITANTE$/), catCol = colOf(table, /^CATEGORIA$/);
   const inWarehouse = row => solCol && isWarehouse(row[solCol.c]);
   const extras = extraRows(table);
+  // Se muestra si el Excel no trae fila de TOTALES o si la suya incluye filas BODEGA
+  const own = ownTotal(table), showOwn = own && (!table.total || own.hasWarehouse);
   const chips = [
     ...(meta.extra ? [`<span class="chip amber">${meta.extra}</span>`] : []),
     ...meta.nums.map(n => `<span class="chip cyan">Producido ${fmt(n)}</span>`),
@@ -138,8 +152,12 @@ function tableCard(table, sheet, q) {
     : highlight(cellText(r[c.c], c), q);
   const body = rows.map(r => `<tr${rowClass(r)}>${cols.map(c => `<td class="${cellClass(c)}">${cellHtml(r, c)}</td>`).join('')}</tr>`).join('')
     || `<tr><td colspan="${cols.length}" class="empty">Sin movimientos registrados</td></tr>`;
-  const foot = table.total && !q
-    ? `<tfoot><tr>${cols.map(c => `<td class="${c.n ? 'n num' : ''}">${esc(cellText(table.total[c.c], c))}</td>`).join('')}</tr></tfoot>` : '';
+  // Fila de TOTALES del Excel y, debajo, el total entregado sin BODEGA
+  const ownCell = c => c === cols[0] ? 'TOTAL ENTREGADO (sin BODEGA)'
+    : c === own.qtyCol ? fmt(own.delivered) : c === own.stockCol ? fmt(own.warehouse) : '';
+  const footRow = cell => `<tr>${cols.map(c => `<td class="${c.n ? 'n num' : ''}">${esc(cell(c))}</td>`).join('')}</tr>`;
+  const footRows = [...(table.total ? [footRow(c => cellText(table.total[c.c], c))] : []), ...(showOwn ? [footRow(ownCell)] : [])];
+  const foot = footRows.length && !q ? `<tfoot>${footRows.join('')}</tfoot>` : '';
 
   return `<section class="card lg">
     <div class="head">

@@ -4,12 +4,12 @@ import { $, fill, clone, fmt, pct, plural, pretty, sum, fileName, shortDate, wee
 import { sumCol, categoryRows } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
-const DELIVERED = /^TOTAL ACREDITACIONES$/;
+// Categorías del Corte Final; Montaje y Desmontaje con lo entregado según el Corte Diario (sin BODEGA)
+const finalRows = books => categoryRows(books.find(b => b.kind === 'final'), books.find(b => b.kind === 'daily'));
 
 export function renderKpis(books) {
-  const final = books.find(b => b.kind === 'final'), returns = books.find(b => b.kind === 'returns');
-  // Solo la tabla principal del Corte Final (la que tiene TOTAL ACREDITACIONES)
-  const produced = sumCol(final, /^PRODUCIDO$/, DELIVERED), delivered = sumCol(final, DELIVERED), leftover = sumCol(final, /^TOTAL SOBRANTE$/, DELIVERED);
+  const returns = books.find(b => b.kind === 'returns'), rows = finalRows(books);
+  const produced = sum(rows, 'p'), delivered = sum(rows, 'e'), leftover = sum(rows, 's');
   fill($('#kpis'), {
     produced: fmt(produced),
     delivered: fmt(delivered),
@@ -25,7 +25,7 @@ const OPEN_UP_TO = 6; // el desglose por concepto se muestra abierto si el tipo 
 
 // Corte Final separado en Montaje y Desmontaje / Hospitalidades / Operación, con desglose por concepto
 export function renderGroups(books) {
-  const rows = categoryRows(books.find(b => b.kind === 'final'));
+  const rows = finalRows(books);
   $('#groups').replaceChildren(...GROUPS.map(group => {
     const own = rows.filter(r => r.group === group);
     const produced = sum(own, 'p'), delivered = sum(own, 'e'), warehouse = sum(own, 'w'), module = sum(own, 'm');
@@ -44,7 +44,7 @@ export function renderGroups(books) {
     card.querySelector('.meter i').style.width = `${produced ? Math.min(100, delivered / produced * 100) : 0}%`;
     card.querySelector('details').open = own.length <= OPEN_UP_TO;
     card.querySelector('tbody').replaceChildren(...own.map(r => clone('tpl-concept', {
-      name: pretty(r.cat), delivered: fmt(r.e), warehouse: fmt(r.w), module: fmt(r.m), produced: fmt(r.p)
+      name: pretty(r.cat) + (r.daily ? ' · Corte Diario' : ''), delivered: fmt(r.e), warehouse: fmt(r.w), module: fmt(r.m), produced: fmt(r.p)
     })));
     return card;
   }));
@@ -65,7 +65,7 @@ export function renderTrend(books) {
 
 // Dona de lo entregado por tipo de acreditación (Corte Final)
 export function renderDistribution(books) {
-  const rows = categoryRows(books.find(b => b.kind === 'final'));
+  const rows = finalRows(books);
   const slices = GROUPS.map((group, tone) => ({ name: group.name, tone, value: sum(rows.filter(r => r.group === group), 'e') })).filter(s => s.value);
   const total = sum(slices, 'value');
   $('#donut').innerHTML = donutHtml(slices, total);

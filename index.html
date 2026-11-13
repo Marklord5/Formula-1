@@ -63,17 +63,17 @@
   <section class="grid" id="kpis">
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Producido</span>
-      <span><span class="kpi-val" data-f="produced"></span><span class="sub">Corte Final · suma de la columna PRODUCIDO</span></span>
+      <span><span class="kpi-val" data-f="produced"></span><span class="sub">Corte Final · suma de PRODUCIDO</span></span>
       <span class="foot"><span class="chip slate">Lo que se imprimió</span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Total acreditaciones</span>
-      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="sub">Corte Final · suma de TOTAL ACREDITACIONES</span></span>
+      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="sub">Corte Final · Montaje y Desmontaje según Corte Diario sin BODEGA</span></span>
       <span class="foot"><span class="chip green" data-f="deliveredShare"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Total sobrante</span>
-      <span><span class="kpi-val amber" data-f="leftover"></span><span class="sub">Corte Final · suma de TOTAL SOBRANTE</span></span>
+      <span><span class="kpi-val amber" data-f="leftover"></span><span class="sub">Producido − entregado (bodega + módulo)</span></span>
       <span class="foot"><span class="chip amber" data-f="leftoverShare"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="returns">
@@ -83,7 +83,7 @@
     </button>
   </section>
 
-  <div class="section-title"><h2>Por tipo de acreditación</h2><span class="sub">Corte Final separado como lo trabaja la oficina</span></div>
+  <div class="section-title"><h2>Por tipo de acreditación</h2><span class="sub">Corte Final separado como lo trabaja la oficina · Montaje y Desmontaje Off Track: Corte Diario sin filas BODEGA</span></div>
   <section class="groups" id="groups"></section>
 
   <section class="overview">
@@ -101,7 +101,7 @@
     </div>
     <div class="card lg" id="distribution">
       <div class="head">
-        <div><h2>Distribución de Acreditaciones</h2><div class="sub">Total entregado por tipo de acreditación (Corte Final)</div></div>
+        <div><h2>Distribución de Acreditaciones</h2><div class="sub">Total entregado por tipo de acreditación (Corte Final; Montaje y Desmontaje del Corte Diario)</div></div>
         <span class="chip slate" data-f="donutTotal"></span>
       </div>
       <div class="donut-wrap"><div id="donut"></div><ul class="donut-legend" id="legend"></ul></div>

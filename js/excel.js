@@ -228,15 +228,34 @@ export const groupOf = text => GROUPS.find(g => g.pattern?.test(norm(text))) ?? 
 export const sheetGroup = sheet => [sheet.name, ...sheet.tables.map(t => t.meta.title)].map(groupOf).find(g => g !== OTHER_GROUP) ?? OTHER_GROUP;
 
 // Categorías de la tabla principal del Corte Final:
-// { cat, p: producido, e: entregado, s: total sobrante, w: sobrante en bodega, m: sobrante en módulo, group }
-export function categoryRows(book) {
-  const rows = [];
+// { cat, p: producido, e: entregado, s: total sobrante, w: sobrante en bodega, m: sobrante en módulo, group, daily }
+// Con el Corte Diario: si una categoría sin módulo tiene ahí su bloque (mismo nombre y misma producción),
+// lo entregado sale de ese bloque (CANTIDAD sin filas BODEGA) y lo demás queda en bodega. daily = true.
+export function categoryRows(book, daily) {
+  const rows = [], blocks = daily ? dailyBlocks(daily) : [];
   const need = { cat: /^CATEGORIA$/, prod: /^PRODUCIDO$/, tot: /^TOTAL ACREDITACIONES$/, sob: /^TOTAL SOBRANTE$/, bod: /^SOBRANTE BODEGA$/, mod: /^SOBRANTE MODULO$/ };
   eachRow(book, need, x => {
-    const [p, e, s, w, m] = [x.prod, x.tot, x.sob, x.bod, x.mod].map(v => num(v) || 0);
-    if (p || e) rows.push({ cat: clean(x.cat), p, e, s, w, m, group: groupOf(x.cat) });
+    let [p, e, s, w, m] = [x.prod, x.tot, x.sob, x.bod, x.mod].map(v => num(v) || 0);
+    const block = !m && blocks.find(b => b.key === blockKey(x.cat) && b.p === p);
+    if (block) [e, w, s] = [block.delivered, p - block.delivered, p - block.delivered];
+    if (p || e) rows.push({ cat: clean(x.cat), p, e, s, w, m, group: groupOf(x.cat), daily: !!block });
   });
   return rows;
+}
+
+// "MONTAJE OFF TRACK 1" (Corte Diario) = "MONTAJE OFF TRACK" (Corte Final)
+const blockKey = text => norm(text).replace(/\s+\d+$/, '');
+
+// Bloques del Corte Diario con su producción y lo entregado (CANTIDAD sin filas BODEGA)
+function dailyBlocks(daily) {
+  const blocks = [];
+  for (const sheet of daily.sheets) for (const table of sheet.tables) {
+    const qty = colOf(table, /^CANTIDAD$/), sol = colOf(table, /^SOLICITANTE$/), p = table.meta.nums[0];
+    if (table.side || !qty || !sol || !p) continue;
+    const delivered = table.rows.reduce((t, r) => t + (isWarehouse(r[sol.c]) ? 0 : num(r[qty.c]) || 0), 0);
+    blocks.push({ key: blockKey(table.meta.title), p, delivered });
+  }
+  return blocks;
 }
 
 // Texto que se muestra en una celda según el tipo de columna
