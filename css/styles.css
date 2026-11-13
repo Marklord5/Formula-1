@@ -249,6 +249,44 @@ mark { background: rgba(255,184,0,.3); color: inherit; border-radius: 2px }
 footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem 0 2rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: 12px }
 
 /* ===== Responsive ===== */
+/* ===== Pista retro bajo la barra superior: carritos en pixel art que se rebasan ===== */
+.race {
+  --curb: repeating-linear-gradient(90deg, var(--red) 0 8px, #E9ECF2 8px 16px);
+  position: relative; height: 42px; overflow: hidden; background: #171C27;
+  border-top: 1px solid var(--line); image-rendering: pixelated
+}
+/* Pianos arriba y abajo + línea central; se recorren a saltos como en un juego de 8 bits */
+.race::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    var(--curb) 0 0 / 16px 3px repeat-x,
+    var(--curb) 0 100% / 16px 3px repeat-x,
+    repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 10px, transparent 10px 24px) 0 50% / 24px 2px repeat-x;
+  animation: race-road .6s steps(4) infinite
+}
+/* Meta a cuadros (pixel) */
+.race::after {
+  content: ''; position: absolute; top: 3px; bottom: 3px; right: 8%; width: 8px; opacity: .55;
+  background: conic-gradient(#E9ECF2 25%, #0B0E14 0 50%, #E9ECF2 0 75%, #0B0E14 0) 0 0 / 8px 8px
+}
+.race .defs { position: absolute }
+.car {
+  position: absolute; left: 0; top: 6px; width: 32px; height: 16px; z-index: 1;
+  animation: race-lap var(--lap) linear var(--start) infinite
+}
+.car svg { display: block; width: 100%; height: 100%; animation: race-engine .2s steps(2) infinite }
+/* Estela de velocidad detrás del carro */
+.car::before {
+  content: ''; position: absolute; right: 100%; top: 7px; width: 28px; height: 2px;
+  background: repeating-linear-gradient(90deg, transparent 0 4px, currentColor 4px 8px); opacity: .45
+}
+.car.c1 { color: var(--red);   --lap: 9s;    --start: -2s }
+.car.c2 { color: var(--cyan);  --lap: 10.5s; --start: -7s;  top: 21px }
+.car.c3 { color: var(--amber); --lap: 12s;   --start: -4s }
+.car.c4 { color: #9575E8;      --lap: 13.5s; --start: -10s; top: 21px }
+@keyframes race-lap { from { transform: translateX(-60px) } to { transform: translateX(calc(100vw + 20px)) } }
+@keyframes race-road { to { background-position: -16px 0, -16px 100%, -24px 50% } }
+@keyframes race-engine { 50% { transform: translateY(-1px) } }
 @media (max-width: 1100px) { .s3 { grid-column: span 6 } }
 @media (max-width: 767px) {
   .wrap { padding: 0 1rem } .grid { gap: 1rem } .s3 { grid-column: span 12 }
@@ -265,7 +303,12 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
 }
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact }
-  .top, .toolbar, .sheets, .tabs, .steps, #back { display: none !important }
+  .top, .toolbar, .sheets, .tabs, .steps, #back, .race { display: none !important }
   .card { break-inside: avoid }
 }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important }
+  /* Sin movimiento: los carritos se quedan quietos en la pista */
+  .race::before, .car, .car svg { animation: none }
+  .car.c1 { left: 18% } .car.c2 { left: 34% } .car.c3 { left: 55% } .car.c4 { left: 72% }
+}
