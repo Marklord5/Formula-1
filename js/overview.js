@@ -4,8 +4,8 @@ import { $, fill, clone, fmt, norm, num, pct, plural, pretty, sum, fileName, sho
 import { categoryRows, returnedTotal, colOf } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
-// Categorías del Corte Final; Montaje y Desmontaje con lo entregado según el Corte Diario (sin BODEGA)
-const finalRows = books => categoryRows(books.find(b => b.kind === 'final'), books.find(b => b.kind === 'daily'));
+// Categorías de la hoja CORTE FINAL
+const finalRows = books => categoryRows(books.find(b => b.kind === 'final'));
 
 // Suma de PRODUCIDO de la hoja FOLIOS OPERACION del Corte Final
 function foliosProduced(book) {
