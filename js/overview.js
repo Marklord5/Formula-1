@@ -21,7 +21,6 @@ export function renderKpis(books) {
   });
 }
 
-const OPEN_UP_TO = 6; // el desglose por concepto se muestra abierto si el tipo tiene pocas categorías
 
 // Corte Final separado en Montaje y Desmontaje / Hospitalidades / Operación, con desglose por concepto
 export function renderGroups(books) {
@@ -42,7 +41,6 @@ export function renderGroups(books) {
     });
     card.classList.toggle('no-module', !module);
     card.querySelector('.meter i').style.width = `${produced ? Math.min(100, delivered / produced * 100) : 0}%`;
-    card.querySelector('details').open = own.length <= OPEN_UP_TO;
     card.querySelector('tbody').replaceChildren(...own.map(r => clone('tpl-concept', {
       name: pretty(r.cat), delivered: fmt(r.e), warehouse: fmt(r.w), module: fmt(r.m), produced: fmt(r.p)
     })));
