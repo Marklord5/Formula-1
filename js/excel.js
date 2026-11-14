@@ -30,7 +30,12 @@ function extraLabel(title, titles) {
   return '';
 }
 
-export const parseBook = wb => wb.SheetNames.map(name => parseSheet(name, sheetGrid(wb.Sheets[name])));
+export const parseBook = wb => wb.SheetNames.map(name => {
+  const sheet = wb.Sheets[name];
+  // origin: celda donde empieza la hoja, para traducir índices a letras/filas reales de Excel
+  const origin = sheet['!ref'] ? XLSX.utils.decode_range(sheet['!ref']).s : { r: 0, c: 0 };
+  return { ...parseSheet(name, sheetGrid(sheet)), origin };
+});
 
 function sheetGrid(sheet) {
   if (!sheet['!ref']) return [];
@@ -197,6 +202,20 @@ export function eachRow(book, need, fn) {
   }
 }
 
+// Dónde está cada columna pedida, tabla por tabla: [{ sheet, header: fila del encabezado, rows, cols: { clave: 'F' } }]
+export function columnSources(book, need, skip = () => false) {
+  const out = [];
+  for (const sheet of book?.sheets ?? []) for (const table of sheet.tables) {
+    if (skip(table)) continue;
+    const cols = Object.entries(need).map(([key, pattern]) => [key, colOf(table, pattern)]);
+    if (cols.some(([, col]) => !col)) continue;
+    out.push({
+      sheet: sheet.name, header: table.r + sheet.origin.r + 1, rows: table.rows.length,
+      cols: Object.fromEntries(cols.map(([key, col]) => [key, XLSX.utils.encode_col(col.c + sheet.origin.c)]))
+    });
+  }
+  return out;
+}
 
 // Hojas de folios: una fila sin CATEGORIA debajo de una categoría es un rango extra (otra producción) de esa categoría.
 // Devuelve Map(fila → categoría a la que pertenece).

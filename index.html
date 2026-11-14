@@ -74,27 +74,27 @@
   <section class="grid" id="kpis">
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Producido · Folios Operación</span>
-      <span><span class="kpi-val" data-f="produced"></span><span class="src"><span class="k">Excel</span><span>Corte Final</span><span class="k">Hoja</span><span>FOLIOS OPERACION</span><span class="k">Suma de</span><span>columna PRODUCIDO</span></span></span>
+      <span><span class="kpi-val" data-f="produced"></span><span class="src" id="src-produced"></span></span>
       <span class="foot"><span class="chip slate">Lo que se imprimió</span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Total acreditaciones</span>
-      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="src"><span class="k">Excel</span><span>Corte Final</span><span class="k">Hoja</span><span>CORTE FINAL</span><span class="k">Suma de</span><span>columna TOTAL ACREDITACIONES</span></span></span>
-      <span class="foot"><span class="chip green" data-f="deliveredShare" title="Porcentaje sobre lo PRODUCIDO de la hoja CORTE FINAL (no de Folios Operación)"></span><span>Ver Excel →</span></span>
+      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="src" id="src-delivered"></span></span>
+      <span class="foot"><span class="chip green" data-f="deliveredShare"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Total sobrante</span>
-      <span><span class="kpi-val amber" data-f="leftover"></span><span class="src"><span class="k">Excel</span><span>Corte Final</span><span class="k">Hoja</span><span>CORTE FINAL</span><span class="k">Suma de</span><span>columna TOTAL SOBRANTE (bodega + módulo)</span></span></span>
-      <span class="foot"><span class="chip amber" data-f="leftoverShare" title="Porcentaje sobre lo PRODUCIDO de la hoja CORTE FINAL (no de Folios Operación)"></span><span>Ver Excel →</span></span>
+      <span><span class="kpi-val amber" data-f="leftover"></span><span class="src" id="src-leftover"></span></span>
+      <span class="foot"><span class="chip amber" data-f="leftoverShare"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="returns">
       <span class="label">Devueltos</span>
-      <span><span class="kpi-val red" data-f="returned"></span><span class="src"><span class="k">Excel</span><span>Devolución</span><span class="k">Hoja</span><span data-f="returnSheets"></span><span class="k">Suma de</span><span>columna CANTIDAD o CANTIDAD DEVUELTA</span></span></span>
+      <span><span class="kpi-val red" data-f="returned"></span><span class="src" id="src-returned"></span></span>
       <span class="foot"><span class="chip red">Sin tablas de resumen</span><span>Ver Excel →</span></span>
     </button>
   </section>
 
-  <div class="section-title"><h2>Por tipo de acreditación</h2><span class="sub">Corte Final separado como lo trabaja la oficina</span></div>
+  <div class="section-title"><h2>Por tipo de acreditación</h2><span class="sub">Cada tarjeta dice de qué Excel, hoja y columna sale cada número</span></div>
   <section class="groups" id="groups"></section>
 
   <section class="overview">
@@ -183,6 +183,7 @@
         </tr></tfoot>
       </table></div>
     </details>
+    <details class="origin"><summary><span class="label">Fuente</span></summary><div class="origin-body"></div></details>
   </article>
 </template>
 

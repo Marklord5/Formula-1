@@ -37,9 +37,9 @@ export const GLOSSARY = {
 // Un tipo con `book` toma sus números de ese Excel en vez del Corte Final (Hospitalidades → hoja CORTE FINAL del
 // Corte Hospitalidades); sus categorías del Corte Final se ignoran para no contarlas dos veces.
 export const GROUPS = [
-  { name: 'Montaje y Desmontaje', pattern: /MONTAJE/ },
-  { name: 'Hospitalidades', pattern: /(^|STAFF )HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE|INVITADO/, book: 'hospitality' },
-  { name: 'Operación' }
+  { name: 'Montaje y Desmontaje', pattern: /MONTAJE/, rule: 'las que dicen MONTAJE en la columna CATEGORIA' },
+  { name: 'Hospitalidades', pattern: /(^|STAFF )HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE|INVITADO/, book: 'hospitality', rule: 'todas las filas de su tabla' },
+  { name: 'Operación', rule: 'el resto de la columna CATEGORIA (sin Montaje ni Hospitalidades)' }
 ];
 
 export const TOP_HOSPITALITY = 12; // categorías del Corte Hospitalidades antes de "Ver todas"

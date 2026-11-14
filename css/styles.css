@@ -79,8 +79,28 @@ section { margin-top: 1.5rem }
 .kpi-val.cyan { color: var(--cyan-hi) }
 .kpi-val.amber { color: var(--amber) }
 .kpi-val.red { color: var(--red-ink) }
-.kpi .src { display: grid; grid-template-columns: auto 1fr; gap: 2px .6rem; margin: .4rem 0 0; font-size: 12px; line-height: 16px }
-.kpi .src .k { color: var(--muted) }
+/* Fuente de cada número: ruta discreta archivo / hoja / [letra] columna */
+.src { display: grid; gap: .3rem; margin-top: .55rem; color: var(--muted); font-size: 11px; line-height: 16px }
+.trail { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; color: var(--ink-2) }
+.trail .icon { width: 12px; height: 12px; color: var(--faint) }
+.trail .file { font-family: var(--mono); font-size: 11px; color: var(--muted) }
+.trail i { font-style: normal; color: var(--faint) }
+.col { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap }
+.col b { min-width: 16px; padding: 0 4px; border-radius: 3px; background: rgba(0,210,190,.1); color: var(--cyan); font: 500 10px/16px var(--mono); text-align: center }
+.col b:empty { display: none }
+.src .meta { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; color: var(--faint) }
+.src .sheets { display: grid; grid-template-columns: 1fr auto auto; gap: 1px .5rem; color: var(--faint) }
+.src .sheets > span { display: contents }
+.src .sheets .num { text-align: right; color: var(--muted) }
+.origin { border-top: 1px solid var(--line); padding-top: .6rem; font-size: 11px; line-height: 16px }
+.origin summary { display: flex; align-items: center; gap: .6rem; cursor: pointer; list-style: none; color: var(--muted) }
+.origin summary::-webkit-details-marker { display: none }
+.origin summary::after { content: '+'; margin-left: auto; color: var(--faint); transition: transform .2s ease-out }
+.origin[open] summary::after { transform: rotate(45deg) }
+.origin summary:hover .trail, .origin summary:focus-visible .trail { color: var(--ink) }
+.origin-body { display: grid; gap: .25rem; margin-top: .55rem; padding-left: .75rem; border-left: 2px solid var(--line-cyan) }
+.origin .row { display: grid; grid-template-columns: 80px 1fr; gap: .5rem; color: var(--ink-2) }
+.origin .k { color: var(--faint) }
 .kpi .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-size: 12px; color: var(--muted); flex-wrap: wrap }
 
 /* ===== Tipos de acreditación ===== */
