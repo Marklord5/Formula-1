@@ -1,17 +1,29 @@
 // Totales de arriba, resumen por tipo de acreditación y pestañas de archivo
 import { GROUPS } from './config.js';
-import { $, fill, clone, fmt, pct, plural, pretty, sum, fileName, shortDate, weekday } from './utils.js';
-import { categoryRows, returnedTotal } from './excel.js';
+import { $, fill, clone, fmt, norm, num, pct, plural, pretty, sum, fileName, shortDate, weekday } from './utils.js';
+import { categoryRows, returnedTotal, colOf } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
 // Categorías del Corte Final; Montaje y Desmontaje con lo entregado según el Corte Diario (sin BODEGA)
 const finalRows = books => categoryRows(books.find(b => b.kind === 'final'), books.find(b => b.kind === 'daily'));
 
+// Suma de PRODUCIDO de la hoja FOLIOS OPERACION del Corte Final
+function foliosProduced(book) {
+  const sheet = book.sheets.find(s => norm(s.name) === 'FOLIOS OPERACION');
+  let total = 0;
+  for (const table of sheet?.tables ?? []) {
+    const col = colOf(table, /^PRODUCIDO$/);
+    if (col) table.rows.forEach(row => total += num(row[col.c]) || 0);
+  }
+  return total;
+}
+
 export function renderKpis(books) {
   const returns = books.find(b => b.kind === 'returns'), rows = finalRows(books);
+  // Los % de entregado y sobrante siguen sobre lo producido de la hoja CORTE FINAL (entregado + sobrante = ese producido)
   const produced = sum(rows, 'p'), delivered = sum(rows, 'e'), leftover = sum(rows, 's');
   fill($('#kpis'), {
-    produced: fmt(produced),
+    produced: fmt(foliosProduced(books.find(b => b.kind === 'final'))),
     delivered: fmt(delivered),
     deliveredShare: `${pct(delivered, produced)} de lo producido`,
     leftover: fmt(leftover),
