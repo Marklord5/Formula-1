@@ -247,6 +247,16 @@ export function categoryRows(book) {
   return rows;
 }
 
+// Categorías de la hoja CORTE FINAL del Corte Hospitalidades: { cat, p: producido, e: entregado, r: restante }
+export function hospitalityRows(book) {
+  const rows = [];
+  eachRow(book, { cat: /^CATEGORIA$/, p: /^TOTAL PRODUCIDO$/, e: /^TOTAL ENTREGADO$/, r: /^RESTANTE$/ }, x => {
+    const [p, e, r] = [x.p, x.e, x.r].map(v => num(v) || 0);
+    if (p || e) rows.push({ cat: clean(x.cat), p, e, r });
+  });
+  return rows;
+}
+
 // Texto que se muestra en una celda según el tipo de columna
 export function cellText(v, col) {
   if (blank(v)) return '';

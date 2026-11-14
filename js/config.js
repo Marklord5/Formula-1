@@ -34,10 +34,11 @@ export const GLOSSARY = {
 
 // Tipos de acreditación, como los trabaja la oficina. Una categoría u hoja cae en el primer tipo cuyo patrón
 // coincida; todo lo demás es Operación (el último, sin patrón).
-// Hospitalidades sigue la hoja FOLIOS STAFF HOSPITALIDADES del Corte Final; bórralo para contarlo dentro de Operación.
+// Un tipo con `book` toma sus números de ese Excel en vez del Corte Final (Hospitalidades → hoja CORTE FINAL del
+// Corte Hospitalidades); sus categorías del Corte Final se ignoran para no contarlas dos veces.
 export const GROUPS = [
   { name: 'Montaje y Desmontaje', pattern: /MONTAJE/ },
-  { name: 'Hospitalidades', pattern: /(^|STAFF )HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE|INVITADO/ },
+  { name: 'Hospitalidades', pattern: /(^|STAFF )HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE|INVITADO/, book: 'hospitality' },
   { name: 'Operación' }
 ];
 

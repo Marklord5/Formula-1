@@ -1,7 +1,7 @@
 // Gráficas de cada Excel. Devuelven HTML/SVG; los colores viven en css/styles.css (.c-ent, .c-sob, .c-dev)
 import { GROUPS, TOP_PER_GROUP, TOP_HOSPITALITY } from './config.js';
 import { $, esc, fmt, pct, plural, norm, num, clean, pretty, sum, parseDate, shortDate, weekday, DAY_MS } from './utils.js';
-import { colOf, eachRow, isWarehouse, categoryRows, returnedCol, returnedProducedCol } from './excel.js';
+import { colOf, eachRow, isWarehouse, categoryRows, returnedCol, returnedProducedCol, hospitalityRows } from './excel.js';
 
 const DATE_WINDOW = 120 * DAY_MS;
 
@@ -253,11 +253,7 @@ function returnCharts(book) {
 /* ---------- Corte Hospitalidades: entregado vs restante y entregas por día ---------- */
 
 function hospitalityCharts(book, { all, width }) {
-  const rows = [];
-  eachRow(book, { cat: /^CATEGORIA$/, p: /^TOTAL PRODUCIDO$/, e: /^TOTAL ENTREGADO$/, r: /^RESTANTE$/ }, x => {
-    const [p, e, r] = [x.p, x.e, x.r].map(v => num(v) || 0);
-    if (p || e) rows.push({ cat: clean(x.cat), p, e, r });
-  });
+  const rows = hospitalityRows(book);
   rows.sort((a, b) => b.p - a.p);
   const P = sum(rows, 'p'), E = sum(rows, 'e'), R = sum(rows, 'r');
   const key = legend([['ent', 'Entregado'], ['sob', 'Restante']]);

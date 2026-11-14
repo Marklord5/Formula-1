@@ -1,7 +1,7 @@
 // Totales de arriba, resumen por tipo de acreditación y pestañas de archivo
 import { GROUPS } from './config.js';
 import { $, fill, clone, fmt, norm, num, pct, plural, pretty, sum, fileName, shortDate, weekday } from './utils.js';
-import { categoryRows, returnedTotal, colOf } from './excel.js';
+import { categoryRows, hospitalityRows, returnedTotal, colOf } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
 // Categorías de la hoja CORTE FINAL
@@ -25,23 +25,29 @@ export function renderKpis(books) {
   fill($('#kpis'), {
     produced: fmt(foliosProduced(books.find(b => b.kind === 'final'))),
     delivered: fmt(delivered),
-    deliveredShare: `${pct(delivered, produced)} de lo producido`,
+    deliveredShare: `${pct(delivered, produced)} de ${fmt(produced)} (hoja CORTE FINAL)`,
     leftover: fmt(leftover),
-    leftoverShare: `${pct(leftover, produced)} de lo producido`,
+    leftoverShare: `${pct(leftover, produced)} de ${fmt(produced)} (hoja CORTE FINAL)`,
     returned: fmt(returnedTotal(returns)),
-    returnSheets: `${returns.sheets.length} hojas`
+    returnSheets: `las ${returns.sheets.length}`
   });
 }
 
 
-// Corte Final separado en Montaje y Desmontaje / Hospitalidades / Operación, con desglose por concepto
+// Categorías de un tipo: del Corte Final o, si el tipo tiene `book`, de ese Excel (restante va como bodega)
+function groupRows(books, group) {
+  if (!group.book) return finalRows(books).filter(r => r.group === group);
+  return hospitalityRows(books.find(b => b.kind === group.book)).map(r => ({ ...r, s: r.r, w: r.r, m: 0 }));
+}
+
+// Montaje y Desmontaje / Operación del Corte Final y Hospitalidades de su propio Excel, con desglose por concepto
 export function renderGroups(books) {
-  const rows = finalRows(books);
   $('#groups').replaceChildren(...GROUPS.map(group => {
-    const own = rows.filter(r => r.group === group);
+    const own = groupRows(books, group);
     const produced = sum(own, 'p'), delivered = sum(own, 'e'), warehouse = sum(own, 'w'), module = sum(own, 'm');
     const card = clone('tpl-group', {
       name: group.name,
+      warehouseLabel: group.book ? 'Restante' : 'En bodega',
       categories: plural(own.length, 'categoría'),
       produced: fmt(produced),
       delivered: fmt(delivered),
@@ -73,10 +79,9 @@ export function renderTrend(books) {
   }
 }
 
-// Dona de lo entregado por tipo de acreditación (Corte Final)
+// Dona de lo entregado por tipo de acreditación (mismas fuentes que las tarjetas)
 export function renderDistribution(books) {
-  const rows = finalRows(books);
-  const slices = GROUPS.map((group, tone) => ({ name: group.name, tone, value: sum(rows.filter(r => r.group === group), 'e') })).filter(s => s.value);
+  const slices = GROUPS.map((group, tone) => ({ name: group.name, tone, value: sum(groupRows(books, group), 'e') })).filter(s => s.value);
   const total = sum(slices, 'value');
   $('#donut').innerHTML = donutHtml(slices, total);
   fill($('#distribution'), { donutTotal: `Total ${fmt(total)}` });

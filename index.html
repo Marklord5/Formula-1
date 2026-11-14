@@ -73,24 +73,24 @@
 
   <section class="grid" id="kpis">
     <button class="card hover kpi s3" data-file="final">
-      <span class="label">Producido Folios Operacion</span>
-      <span><span class="kpi-val" data-f="produced"></span><span class="sub">Corte Final · suma de PRODUCIDO (hoja FOLIOS OPERACION)</span></span>
+      <span class="label">Producido · Folios Operación</span>
+      <span><span class="kpi-val" data-f="produced"></span><span class="src"><span class="k">Excel</span><span>Corte Final</span><span class="k">Hoja</span><span>FOLIOS OPERACION</span><span class="k">Suma de</span><span>columna PRODUCIDO</span></span></span>
       <span class="foot"><span class="chip slate">Lo que se imprimió</span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
       <span class="label">Total acreditaciones</span>
-      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="sub">Corte Final · suma de TOTAL ACREDITACIONES</span></span>
-      <span class="foot"><span class="chip green" data-f="deliveredShare"></span><span>Ver Excel →</span></span>
+      <span><span class="kpi-val cyan" data-f="delivered"></span><span class="src"><span class="k">Excel</span><span>Corte Final</span><span class="k">Hoja</span><span>CORTE FINAL</span><span class="k">Suma de</span><span>columna TOTAL ACREDITACIONES</span></span></span>
+      <span class="foot"><span class="chip green" data-f="deliveredShare" title="Porcentaje sobre lo PRODUCIDO de la hoja CORTE FINAL (no de Folios Operación)"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
-      <span class="label">Total sobrante </span>
-      <span><span class="kpi-val amber" data-f="leftover"></span><span class="sub">Corte Final · suma de TOTAL SOBRANTE (bodega + módulo)</span></span>
-      <span class="foot"><span class="chip amber" data-f="leftoverShare"></span><span>Ver Excel →</span></span>
+      <span class="label">Total sobrante</span>
+      <span><span class="kpi-val amber" data-f="leftover"></span><span class="src"><span class="k">Excel</span><span>Corte Final</span><span class="k">Hoja</span><span>CORTE FINAL</span><span class="k">Suma de</span><span>columna TOTAL SOBRANTE (bodega + módulo)</span></span></span>
+      <span class="foot"><span class="chip amber" data-f="leftoverShare" title="Porcentaje sobre lo PRODUCIDO de la hoja CORTE FINAL (no de Folios Operación)"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="returns">
       <span class="label">Devueltos</span>
-      <span><span class="kpi-val red" data-f="returned"></span><span class="sub">Devolución · suma de lo devuelto (todas las hojas)</span></span>
-      <span class="foot"><span class="chip red" data-f="returnSheets"></span><span>Ver Excel →</span></span>
+      <span><span class="kpi-val red" data-f="returned"></span><span class="src"><span class="k">Excel</span><span>Devolución</span><span class="k">Hoja</span><span data-f="returnSheets"></span><span class="k">Suma de</span><span>columna CANTIDAD o CANTIDAD DEVUELTA</span></span></span>
+      <span class="foot"><span class="chip red">Sin tablas de resumen</span><span>Ver Excel →</span></span>
     </button>
   </section>
 
@@ -112,7 +112,7 @@
     </div>
     <div class="card lg" id="distribution">
       <div class="head">
-        <div><h2>Distribución de Acreditaciones</h2><div class="sub">Total entregado por tipo de acreditación (Corte Final)</div></div>
+        <div><h2>Distribución de Acreditaciones</h2><div class="sub">Total entregado por tipo de acreditación (Hospitalidades del Corte Hospitalidades)</div></div>
         <span class="chip slate" data-f="donutTotal"></span>
       </div>
       <div class="donut-wrap"><div id="donut"></div><ul class="donut-legend" id="legend"></ul></div>
@@ -168,14 +168,14 @@
     <span class="meter"><i class="c-ent"></i></span>
     <dl class="group-stats">
       <div><dt>Entregado</dt><dd class="num"><span data-f="delivered"></span> <small data-f="deliveredShare"></small></dd></div>
-      <div><dt>En bodega</dt><dd class="num"><span data-f="warehouse"></span> <small data-f="warehouseShare"></small></dd></div>
+      <div><dt data-f="warehouseLabel"></dt><dd class="num"><span data-f="warehouse"></span> <small data-f="warehouseShare"></small></dd></div>
       <div class="module"><dt>En módulo</dt><dd class="num"><span data-f="module"></span> <small data-f="moduleShare"></small></dd></div>
       <div><dt>Total</dt><dd class="num" data-f="produced"></dd></div>
     </dl>
     <details class="concepts">
       <summary>Desglose por concepto</summary>
       <div class="tbl"><table>
-        <thead><tr><th>Concepto</th><th class="n">Entregado</th><th class="n">En bodega</th><th class="n module">En módulo</th><th class="n">Total</th></tr></thead>
+        <thead><tr><th>Concepto</th><th class="n">Entregado</th><th class="n" data-f="warehouseLabel"></th><th class="n module">En módulo</th><th class="n">Total</th></tr></thead>
         <tbody></tbody>
         <tfoot><tr>
           <td>TOTAL GENERAL</td><td class="n num" data-f="delivered"></td><td class="n num" data-f="warehouse"></td>
