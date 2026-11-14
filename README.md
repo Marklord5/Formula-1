@@ -16,6 +16,7 @@ data/corte-final.xlsx    ← CORTE FINAL F1-2026
 data/corte-diario.xlsx   ← CORTE DIARIO DE ACREDITACIONES 2026
 data/devolucion.xlsx     ← DEVOLUCIÓN F1 2026
 data/corte-hospitalidades.xlsx ← CORTE HOSPITALIDADES F1-26
+data/corte-ecos.xlsx     ← CORTE ECOS 2026 (pases de estacionamiento y candados)
 vendor/xlsx.full.min.js  ← lector de Excel (SheetJS)
 ```
 
@@ -44,12 +45,13 @@ Da doble clic en **`Abrir reporte.command`**: levanta un servidor local y abre e
 0. **Descargar los Excel**: un botón por archivo en el encabezado (sale de `FILES`; si agregas un Excel, aparece solo).
 1. **Totales** arriba: PRODUCIDO, TOTAL ACREDITACIONES y TOTAL SOBRANTE (suma de esas columnas del Corte Final) y Devueltos (suma de CANTIDAD del Excel de devolución).
 2. **Por tipo de acreditación**: el Corte Final separado en Montaje y Desmontaje, Hospitalidades y Operación.
-3. **Paso 1 · Elige el Excel**: Corte Final, Corte Diario o Devolución.
+3. **Paso 1 · Elige el Excel**: Corte Final, Corte Diario, Devolución, Corte Hospitalidades o Corte ECOS.
 4. **Paso 2 · Gráficas** del Excel elegido:
    - Corte Final → entregado vs sobrante, total y por categoría (agrupadas por tipo).
    - Corte Diario → entregas por día (sin filas de BODEGA) y quién recibió más.
    - Devolución → devueltos por hoja y lo que más se devolvió.
    - Corte Hospitalidades → entregado vs restante (total y por categoría) y entregas por día de la hoja ENTREGAS.
+   - Corte ECOS → entregado vs sobrante en bodega de la hoja CONTEO FINAL y entregas por día (CORTE DIARIO PASES y CANDADOS). No entra en los totales de arriba.
 
 Para **agregar otro Excel**: cópialo a `data/` con un nombre sin espacios y añádelo a `FILES` en `js/config.js`. Aparecen solos su pestaña, su botón de descarga, sus hojas y su buscador; para gráficas propias se agrega una función en `js/charts.js` con su `kind`.
 5. **Paso 3 · Hojas**: una tarjeta por hoja, agrupadas por tipo. Al darle clic se abre el desglose: las mismas tablas y columnas del Excel, con el título de cada bloque, lo producido, los folios y su fila de TOTALES. El buscador encuentra nombres, folios o áreas en todas las hojas.

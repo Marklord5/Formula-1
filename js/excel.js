@@ -10,6 +10,8 @@ const CODE_COL = /FOLIO|^F\. |^NO\b|^ID$/;
 const DATE_COL = /FECHA/;
 const NUMERIC_COL = /CANTIDAD|EXISTENCIA|PRODUCIDO|SOBRANTE|TOTAL/;
 const WAREHOUSE = /^(EN )?BODEGA$/;
+// Fila que cierra un bloque: TOTAL o, en el Corte ECOS, ENTREGADOS (seguida de BODEGA con lo que quedó)
+const TOTAL_ROW = /^(TOTAL|ENTREGADOS$)/;
 const ORDINALS = { SEGUNDA: 2, TERCERA: 3, CUARTA: 4 };
 const MAX_ROWS = 3000, MAX_COLS = 60, MAX_GAP = 10, TITLE_ROWS = 4;
 
@@ -108,7 +110,7 @@ function titleRows(g, heads, h) {
   const rows = [];
   for (let r = h.r - 1; r >= 0 && h.r - r <= TITLE_ROWS; r--) {
     const values = filledCells(g[r], h.s - 1, h.e + 1);
-    if (heads.some(o => o.r === r && touches(o, h)) || values.some(v => /^TOTAL/.test(norm(v)))) break;
+    if (heads.some(o => o.r === r && touches(o, h)) || values.some(v => TOTAL_ROW.test(norm(v)) || (values.length <= 2 && isWarehouse(v)))) break;
     if (!values.length) { if (rows.length) break; continue; }
     // Tras una fila vacía, solo cuenta como título un texto suelto
     if (!rows.length && r < h.r - 1 && !(values.length === 1 && typeof values[0] === 'string')) break;
@@ -125,7 +127,7 @@ function readRows(g, h, end) {
     const cells = g[r].slice(h.s, h.e + 1);
     if (cells.every(nothing)) { if (++gap >= MAX_GAP) break; continue; }
     gap = 0;
-    if (cells.some(v => typeof v === 'string' && /^TOTAL/.test(norm(v)))) return { rows, total: g[r] };
+    if (cells.some(v => typeof v === 'string' && TOTAL_ROW.test(norm(v)))) return { rows, total: g[r] };
     // Filas sin texto en una columna con encabezado son restos de fórmulas, no movimientos…
     // …salvo que traigan CANTIDAD > 0: es una entrega a la que no se le capturó el solicitante
     // ("Columna1", "Columna2"… son nombres automáticos de Excel, no cuentan como encabezado)

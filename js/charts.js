@@ -5,7 +5,7 @@ import { colOf, eachRow, isWarehouse, categoryRows, returnedCol, returnedProduce
 
 const DATE_WINDOW = 120 * DAY_MS;
 
-const CHARTS = { final: finalCharts, daily: dailyCharts, returns: returnCharts, hospitality: hospitalityCharts };
+const CHARTS = { final: finalCharts, daily: dailyCharts, returns: returnCharts, hospitality: hospitalityCharts, ecos: ecosCharts };
 export const chartsHtml = (book, options) => CHARTS[book.kind](book, options);
 
 /* ---------- piezas comunes ---------- */
@@ -302,6 +302,44 @@ function hospitalityDays(book, width) {
   const how = `Suma de TOTAL ENTREGADO de la hoja ENTREGAS por FECHA: <b>${fmt(sum(points, 'v'))}</b> en ${plural(points.length, 'día')}.`
     + (undated ? ` Otras <b>${fmt(undated)}</b> no tienen fecha y no aparecen aquí.` : '');
   return [how, `<div class="chart">${columns(points, width)}</div>`];
+}
+
+/* ---------- Corte ECOS: pases de estacionamiento y candados ---------- */
+
+// Hoja CONTEO FINAL (producido, entregado y sobrante en bodega por categoría) + entregas por día de los bloques
+function ecosCharts(book, { all, width }) {
+  const rows = [];
+  eachRow(book, { cat: /^CATEGORIA$/, p: /^TOTAL PRODUCIDO$/, e: /^CANTIDAD ENTREGADA$/, s: /^SOBRANTE BODEGA$/ }, x => {
+    const [p, e, s] = [x.p, x.e, x.s].map(v => num(v) || 0);
+    if (p || e) rows.push({ cat: clean(x.cat), p, e, s });
+  });
+  rows.sort((a, b) => b.p - a.p);
+  const P = sum(rows, 'p'), E = sum(rows, 'e'), S = sum(rows, 's');
+  const key = legend([['ent', 'Entregado'], ['sob', 'Sobrante bodega']]);
+
+  const total = card('¿Cuánto se entregó de lo que se produjo?',
+    `Hoja CONTEO FINAL del Corte ECOS: se produjeron <b>${fmt(P)}</b> pases y candados, se entregaron <b>${fmt(E)}</b> (${pct(E, P)}) y quedaron <b>${fmt(S)}</b> en bodega.`,
+    `<div class="hb-t total" ${tipAttr(`<b>Total ECOS</b>${tipRow('Producido', fmt(P))}${tipRow('Entregado', `${fmt(E)} (${pct(E, P)})`)}${tipRow('Sobrante bodega', fmt(S))}`)}>
+      <i class="c-ent" style="width:${E / (E + S) * 100}%"></i><i class="c-sob" style="width:${S / (E + S) * 100}%"></i></div>`,
+    key, 'wide');
+
+  const shown = all ? rows : rows.slice(0, TOP_HOSPITALITY);
+  const toggle = rows.length > TOP_HOSPITALITY
+    ? `<button class="btn more" data-all>${all ? `Ver solo las ${TOP_HOSPITALITY} principales` : `Ver las ${rows.length} categorías`}</button>` : '';
+  const bars = card('Entregado y sobrante por categoría',
+    'Cada barra es una categoría de la hoja CONTEO FINAL; la parte verde es lo entregado y la dorada lo que quedó en bodega. El número es lo producido.',
+    hbars(shown.map(r => ({
+      label: r.cat, value: fmt(r.p), segs: [{ v: r.e, tone: 'ent' }, { v: r.s, tone: 'sob' }],
+      tip: `<b>${esc(r.cat)}</b>${tipRow('Producido', fmt(r.p))}${tipRow('Entregado', `${fmt(r.e)} (${pct(r.e, r.p)})`)}${tipRow('Sobrante bodega', fmt(r.s))}`
+    }))) + toggle,
+    key, 'wide');
+
+  const points = dailyPoints(book);
+  const days = card('Entregas por día',
+    `Suma de CANTIDAD de las hojas CORTE DIARIO PASES y CANDADOS, agrupada por FECHA: <b>${fmt(sum(points, 'v'))}</b> en ${plural(points.length, 'día')}.`,
+    `<div class="chart">${columns(points, width)}</div>`, '', 'wide');
+
+  return total + bars + days;
 }
 
 /* ---------- Tooltip compartido: cualquier elemento con data-tip ---------- */

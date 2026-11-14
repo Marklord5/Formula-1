@@ -4,7 +4,8 @@ export const FILES = [
   { kind: 'final',   name: 'Corte Final',  url: 'data/corte-final.xlsx'  },
   { kind: 'daily',   name: 'Corte Diario', url: 'data/corte-diario.xlsx' },
   { kind: 'returns', name: 'Devolución',   url: 'data/devolucion.xlsx'   },
-  { kind: 'hospitality', name: 'Corte Hospitalidades', url: 'data/corte-hospitalidades.xlsx' }
+  { kind: 'hospitality', name: 'Corte Hospitalidades', url: 'data/corte-hospitalidades.xlsx' },
+  { kind: 'ecos', name: 'Corte ECOS', url: 'data/corte-ecos.xlsx' }
 ];
 
 // Qué significa cada columna (aparece al pasar el mouse por el encabezado de la tabla)
@@ -27,6 +28,7 @@ export const GLOSSARY = {
   'CANTIDAD SOLICITADA': 'Cuántas pidió el solicitante',
   'SOBRANTE REINTEGRO': 'Lo que se regresó después de entregar',
   'CANTIDAD DEVUELTA': 'Piezas que regresaron después del evento',
+  'CANTIDAD ENTREGADA': 'Cuántos pases o candados se entregaron',
   'CANTIDAD PRODUCIDA': 'Cuántas se produjeron de esa categoría y día'
 };
 
