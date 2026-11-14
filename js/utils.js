@@ -9,8 +9,10 @@ export const norm = v => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036
 export const blank = v => v == null || typeof v === 'boolean' || (typeof v === 'string' && !v.trim());
 export const nothing = v => blank(v) || v === 0;
 export const clean = v => typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : v;
+// Número de una celda. Acepta números guardados como texto ("90", "005", "1,390") y con asterisco de nota ("390*")
+const NUM_TEXT = /^\s*(-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)\s*\**\s*$/;
 export const num = v => typeof v === 'number' ? v
-  : typeof v === 'string' && /^\s*-?\d+(\.\d+)?\s*$/.test(v) ? +v : NaN;
+  : typeof v === 'string' && NUM_TEXT.test(v) ? +v.match(NUM_TEXT)[1].replace(/,/g, '') : NaN;
 
 /* ---------- formato ---------- */
 export const esc = v => String(v ?? '').replace(/[&<>"]/g, c => HTML_ESCAPES[c]);

@@ -125,6 +125,9 @@ export function renderGroups(books) {
     origin.querySelector('.origin-body').append(
       ...map.map(([label, key]) => el('span', 'row', el('span', 'k', label), colTag(letter(srcs, key), names[key]))),
       el('span', 'row', el('span', 'k', 'Categorías'), el('span', '', group.rule)));
+    const fixed = own.filter(r => r.fixed);
+    if (fixed.length) origin.querySelector('.origin-body').append(el('span', 'row', el('span', 'k', 'Ajuste'),
+      el('span', '', `${plural(fixed.length, 'fila')} con producido en texto: se usó entregado + ${group.book ? 'restante' : 'sobrante'}`)));
     card.querySelector('.meter i').style.width = `${produced ? Math.min(100, delivered / produced * 100) : 0}%`;
     card.querySelector('tbody').replaceChildren(...own.map(r => clone('tpl-concept', {
       name: pretty(r.cat), delivered: fmt(r.e), warehouse: fmt(r.w), module: fmt(r.m), produced: fmt(r.p)

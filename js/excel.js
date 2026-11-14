@@ -42,7 +42,10 @@ function sheetGrid(sheet) {
   const range = XLSX.utils.decode_range(sheet['!ref']);
   range.e.r = Math.min(range.e.r, MAX_ROWS);
   range.e.c = Math.min(range.e.c, MAX_COLS);
-  return XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: null, range, blankrows: true });
+  const grid = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: null, range, blankrows: true });
+  // Filas ocultas (o filtradas) en Excel: se vacían y se marcan para no leerlas ni contarlas como hueco
+  const props = sheet['!rows'] ?? [];
+  return grid.map((row, i) => props[i + range.s.r]?.hidden ? Object.assign([], { hidden: true }) : row);
 }
 
 function parseSheet(name, g) {
@@ -114,6 +117,7 @@ function readTable(g, heads, h) {
 function titleRows(g, heads, h) {
   const rows = [];
   for (let r = h.r - 1; r >= 0 && h.r - r <= TITLE_ROWS; r--) {
+    if (g[r].hidden) continue;
     const values = filledCells(g[r], h.s - 1, h.e + 1);
     if (heads.some(o => o.r === r && touches(o, h)) || values.some(v => TOTAL_ROW.test(norm(v)) || (values.length <= 2 && isWarehouse(v)))) break;
     if (!values.length) { if (rows.length) break; continue; }
@@ -129,6 +133,7 @@ function readRows(g, h, end) {
   const qtyCol = g[h.r].findIndex((v, c) => c >= h.s && c <= h.e && /^CANTIDAD$/.test(norm(v)));
   let gap = 0;
   for (let r = h.r + 1; r < end; r++) {
+    if (g[r].hidden) continue;
     const cells = g[r].slice(h.s, h.e + 1);
     if (cells.every(nothing)) { if (++gap >= MAX_GAP) break; continue; }
     gap = 0;
@@ -260,8 +265,10 @@ export function categoryRows(book) {
   const rows = [];
   const need = { cat: /^CATEGORIA$/, prod: /^PRODUCIDO$/, tot: /^TOTAL ACREDITACIONES$/, sob: /^TOTAL SOBRANTE$/, bod: /^SOBRANTE BODEGA$/, mod: /^SOBRANTE MODULO$/ };
   eachRow(book, need, x => {
-    const [p, e, s, w, m] = [x.prod, x.tot, x.sob, x.bod, x.mod].map(v => num(v) || 0);
-    if (p || e) rows.push({ cat: clean(x.cat), p, e, s, w, m, group: groupOf(x.cat) });
+    const [e, s, w, m] = [x.tot, x.sob, x.bod, x.mod].map(v => num(v) || 0);
+    // Producido escrito como texto (p. ej. "180* X DIA 90* DISEÑO"): se toma entregado + sobrante de la fila
+    const fixed = !blank(x.prod) && isNaN(num(x.prod)), p = fixed ? e + s : num(x.prod) || 0;
+    if (p || e) rows.push({ cat: clean(x.cat), p, e, s, w, m, fixed, group: groupOf(x.cat) });
   });
   return rows;
 }
@@ -270,8 +277,10 @@ export function categoryRows(book) {
 export function hospitalityRows(book) {
   const rows = [];
   eachRow(book, { cat: /^CATEGORIA$/, p: /^TOTAL PRODUCIDO$/, e: /^TOTAL ENTREGADO$/, r: /^RESTANTE$/ }, x => {
-    const [p, e, r] = [x.p, x.e, x.r].map(v => num(v) || 0);
-    if (p || e) rows.push({ cat: clean(x.cat), p, e, r });
+    const [e, r] = [x.e, x.r].map(v => num(v) || 0);
+    // Producido escrito como texto (p. ej. "180* X DIA 90* DISEÑO"): se toma entregado + restante de la fila
+    const fixed = !blank(x.p) && isNaN(num(x.p)), p = fixed ? e + r : num(x.p) || 0;
+    if (p || e) rows.push({ cat: clean(x.cat), p, e, r, fixed });
   });
   return rows;
 }

@@ -88,7 +88,7 @@ function setStatus(status, error = '') {
 async function loadBook(file, stamp) {
   const res = await fetch(file.url + stamp);
   if (!res.ok) throw new Error(`No encontré ${file.url} (${res.status}).`);
-  return { ...file, sheets: parseBook(XLSX.read(await res.arrayBuffer())) };
+  return { ...file, sheets: parseBook(XLSX.read(await res.arrayBuffer(), { cellStyles: true })) };
 }
 
 // Abre la pestaña y hoja guardadas en la URL (#archivo/hoja)
