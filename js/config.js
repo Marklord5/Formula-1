@@ -41,9 +41,12 @@ export const GLOSSARY = {
 // Corte Hospitalidades); sus categorías del Corte Final se ignoran para no contarlas dos veces.
 export const GROUPS = [
   { name: 'Montaje y Desmontaje', pattern: /MONTAJE/, rule: 'las que dicen MONTAJE en la columna CATEGORIA' },
-  { name: 'Hospitalidades', pattern: /(^|STAFF )HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE|INVITADO/, book: 'hospitality', rule: 'todas las filas de su tabla' },
-  { name: 'Operación', rule: 'el resto de la columna CATEGORIA (sin Montaje ni Hospitalidades)' }
+  { name: 'Hospitalidades', pattern: /(^|STAFF )HOSPITALIDADES|BANORTE|SANTANDER|BANAMEX|TSB|EXPERIENCES|PLATINO|ZONA PLUS|SPORTS? LOUNGE/, book: 'hospitality', rule: 'las filas de su tabla, menos staff, talento e invitados zona verde' },
+  { name: 'Operación', rule: 'el resto de la columna CATEGORIA (incluye staff, talento e invitados zona verde de los patrocinadores)' }
 ];
+
+// Staff, talento e invitados zona verde de los patrocinadores: aunque digan BANORTE, SANTANDER, TSB… son Operación
+export const OPERATIVE = /STAFF|TALENTO|INVITADOS? ZONA VERDE/;
 
 export const TOP_HOSPITALITY = 12; // categorías del Corte Hospitalidades antes de "Ver todas"
 export const TOP_PER_GROUP = 6; // categorías por tipo en la gráfica del Corte Final antes de "Ver todas"

@@ -1,6 +1,6 @@
 // Convierte cada hoja de Excel en tablas: { name, tables: [{ cols, rows, total, meta }], raw }
 // Las tablas se encuentran por el texto de sus encabezados, no por posición.
-import { GROUPS } from './config.js';
+import { GROUPS, OPERATIVE } from './config.js';
 import { norm, blank, nothing, clean, num, fmt, shortDate, parseDate } from './utils.js';
 
 // Una fila con 3 o más de estos textos es un encabezado de tabla
@@ -254,7 +254,10 @@ export function returnedTotal(book) {
 /* ---------- tipos de acreditación ---------- */
 
 const OTHER_GROUP = GROUPS.at(-1);
-export const groupOf = text => GROUPS.find(g => g.pattern?.test(norm(text))) ?? OTHER_GROUP;
+export const groupOf = text => {
+  const t = norm(text), group = GROUPS.find(g => g.pattern?.test(t)) ?? OTHER_GROUP;
+  return group.book && OPERATIVE.test(t) ? OTHER_GROUP : group;
+};
 
 // Tipo de una hoja: por su nombre o, si no lo dice (p. ej. "PADDOCK"), por el título de sus bloques
 export const sheetGroup = sheet => [sheet.name, ...sheet.tables.map(t => t.meta.title)].map(groupOf).find(g => g !== OTHER_GROUP) ?? OTHER_GROUP;
@@ -273,14 +276,15 @@ export function categoryRows(book) {
   return rows;
 }
 
-// Categorías de la hoja CORTE FINAL del Corte Hospitalidades: { cat, p: producido, e: entregado, r: restante }
+// Categorías de la hoja CORTE FINAL del Corte Hospitalidades, sin las operativas (staff, talento, invitados zona verde,
+// que se cuentan en Operación desde el Corte Final): { cat, p: producido, e: entregado, r: restante }
 export function hospitalityRows(book) {
   const rows = [];
   eachRow(book, { cat: /^CATEGORIA$/, p: /^TOTAL PRODUCIDO$/, e: /^TOTAL ENTREGADO$/, r: /^RESTANTE$/ }, x => {
     const [e, r] = [x.e, x.r].map(v => num(v) || 0);
     // Producido escrito como texto (p. ej. "180* X DIA 90* DISEÑO"): se toma entregado + restante de la fila
     const fixed = !blank(x.p) && isNaN(num(x.p)), p = fixed ? e + r : num(x.p) || 0;
-    if (p || e) rows.push({ cat: clean(x.cat), p, e, r, fixed });
+    if ((p || e) && !OPERATIVE.test(norm(x.cat))) rows.push({ cat: clean(x.cat), p, e, r, fixed });
   });
   return rows;
 }

@@ -9,6 +9,8 @@
   /* Detalles retro de carreras: pianos rojo/blanco y bandera a cuadros (pixel) */
   --curb: repeating-linear-gradient(90deg, var(--red) 0 8px, #E9ECF2 8px 16px);
   --checker: conic-gradient(#E9ECF2 25%, #0B0E14 0 50%, #E9ECF2 0 75%, #0B0E14 0);
+  /* Distintivos por tipo: hospitalidad plata, operación oro */
+  --silver: linear-gradient(135deg, #F4F6F9, #A7AFBA 55%, #DDE1E7); --gold: linear-gradient(135deg, #FCE9A6, #C8952A 55%, #F1D06C);
   --r-sm: .25rem; --r: .5rem; --r-lg: 1rem;
   --display: 'Sora', system-ui, sans-serif; --body: 'Hanken Grotesk', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace;
 }
@@ -92,6 +94,8 @@ section { margin-top: 1.5rem }
 .src .sheets { display: grid; grid-template-columns: 1fr auto auto; gap: 1px .5rem; color: var(--faint) }
 .src .sheets > span { display: contents }
 .src .sheets .num { text-align: right; color: var(--muted) }
+.src .sheets .sub { padding-left: .8rem; font-size: 10.5px }
+.src .sheets .num.sub { padding-left: 0; color: var(--faint) }
 .origin { border-top: 1px solid var(--line); padding-top: .6rem; font-size: 11px; line-height: 16px }
 .origin summary { display: flex; align-items: center; gap: .6rem; cursor: pointer; list-style: none; color: var(--muted) }
 .origin summary::-webkit-details-marker { display: none }
@@ -224,6 +228,12 @@ tbody tr.warehouse { box-shadow: inset 2px 0 0 rgba(255,255,255,.2) }
 tbody tr.extra { box-shadow: inset 2px 0 0 var(--amber) }
 tbody tr.extra .extra-of { color: var(--muted); font-weight: 400; font-size: 12px }
 tfoot td { font: 700 13px var(--display); color: var(--cyan-hi); border-top: 1px solid rgba(0,210,190,.35); background: rgba(0,210,190,.06) }
+/* Punto metálico junto a la categoría: plata = hospitalidad, oro = operación */
+.kind { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: .5rem; vertical-align: 1px; box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 0 4px rgba(255,255,255,.08) }
+.kind.hosp { background: var(--silver) }
+.kind.oper { background: var(--gold) }
+.chip.kind-chip { color: var(--ink-2); background: rgba(255,255,255,.04); border-color: var(--line) }
+.chip.kind-chip .kind { margin-right: 0 }
 mark { background: rgba(255,184,0,.3); color: inherit; border-radius: 2px }
 
 /* ===== Gráficas ===== */

@@ -1,7 +1,7 @@
 // Paso 3: tarjetas de resumen por hoja y desglose con las tablas del Excel
-import { GLOSSARY, GROUPS } from './config.js';
+import { GLOSSARY, GROUPS, OPERATIVE } from './config.js';
 import { $, clone, esc, fmt, pct, norm, num, plural } from './utils.js';
-import { colOf, cellText, isWarehouse, sheetGroup, extraRows, returnedCol, returnedProducedCol } from './excel.js';
+import { colOf, cellText, isWarehouse, sheetGroup, groupOf, extraRows, returnedCol, returnedProducedCol } from './excel.js';
 
 /* ---------- búsqueda ---------- */
 
@@ -140,18 +140,34 @@ function ownTotal(table) {
   return { qtyCol, stockCol: colOf(table, /^EXISTENCIA/), delivered, warehouse: Math.max(0, produced - delivered), hasWarehouse };
 }
 
-function tableCard(table, sheet, q) {
+// Distintivo por categoría: hospitalidad (plata) u operación (oro); Montaje no lleva.
+// En el Corte Hospitalidades y en hojas de hospitalidades todo es hospitalidad salvo staff, talento e invitados zona verde.
+const KINDS = { hosp: 'Hospitalidad', oper: 'Operación' };
+function kindOf(name, allHosp) {
+  if (!norm(name)) return null;
+  if (allHosp) return OPERATIVE.test(norm(name)) ? 'oper' : 'hosp';
+  const group = groupOf(name);
+  return group.book ? 'hosp' : group.pattern ? null : 'oper';
+}
+const kindDot = kind => kind ? `<i class="kind ${kind}" title="${KINDS[kind]}"></i>` : '';
+
+function tableCard(table, sheet, q, book) {
   const rows = matchRows(table, q);
   if (!rows.length && (q || table.rows.length)) return '';
   const { meta } = table, cols = visibleCols(table);
   const solCol = colOf(table, /^SOLICITANTE$/), catCol = colOf(table, /^CATEGORIA$/);
   const inWarehouse = row => solCol && isWarehouse(row[solCol.c]);
   const extras = extraRows(table);
+  const allHosp = book.kind === 'hospitality' || !!sheetGroup(sheet).book;
+  const marked = catCol && book.kind !== 'ecos' && !/ECOS/.test(norm(sheet.name)); // ECOS no es hospitalidad ni operación
+  const kinds = new Map(marked ? rows.map(r => [r, kindOf(extras.get(r) ?? r[catCol.c], allHosp)]) : []);
+  const used = Object.keys(KINDS).filter(k => [...kinds.values()].includes(k));
   // Se muestra si el Excel no trae fila de TOTALES o si la suya incluye filas BODEGA
   const own = ownTotal(table), showOwn = own && (!table.total || own.hasWarehouse);
   const chips = [
     ...(meta.extra ? [`<span class="chip amber">${meta.extra}</span>`] : []),
     ...meta.nums.map(n => `<span class="chip cyan">Producido ${fmt(n)}</span>`),
+    ...used.map(k => `<span class="chip kind-chip">${kindDot(k)}${KINDS[k]}</span>`),
     ...(rows.some(inWarehouse) ? ['<span class="chip warehouse">Filas BODEGA = quedaron en bodega, no acreditadas</span>'] : []),
     ...(rows.some(r => extras.has(r)) ? ['<span class="chip extra">Extra = rango de folios adicional (otra producción) de la categoría de arriba</span>'] : []),
     ...meta.notes.map(n => n === '✅' ? '<span class="chip green">✅ Completo</span>' : `<span class="chip amber">${esc(n)}</span>`)
@@ -164,9 +180,9 @@ function tableCard(table, sheet, q) {
     return `<th class="${c.n ? 'n' : ''}"${meaning ? ` title="${esc(meaning)}"` : ''}>${esc(c.name)}</th>`;
   };
   const rowClass = r => inWarehouse(r) ? ' class="warehouse"' : extras.has(r) ? ' class="extra"' : '';
-  const cellHtml = (r, c) => c === catCol && extras.has(r)
+  const cellHtml = (r, c) => (c === catCol ? kindDot(kinds.get(r)) : '') + (c === catCol && extras.has(r)
     ? `<span class="chip extra">Extra</span> <span class="extra-of">de ${esc(extras.get(r))}</span>`
-    : highlight(cellText(r[c.c], c), q);
+    : highlight(cellText(r[c.c], c), q));
   const body = rows.map(r => `<tr${rowClass(r)}>${cols.map(c => `<td class="${cellClass(c)}">${cellHtml(r, c)}</td>`).join('')}</tr>`).join('')
     || `<tr><td colspan="${cols.length}" class="empty">Sin movimientos registrados</td></tr>`;
   // Fila de TOTALES del Excel y, debajo, el total entregado sin BODEGA
@@ -212,8 +228,8 @@ export function renderBody(book, state) {
 
   const html = (q ? book.sheets : [sheet]).map(s => {
     // Tablas laterales (cálculos auxiliares del Excel) van plegadas al final para no confundirse con los movimientos
-    const main = s.tables.filter(t => !t.side).map(t => tableCard(t, s, q)).join('');
-    const side = s.tables.filter(t => t.side).map(t => tableCard(t, s, q)).filter(Boolean);
+    const main = s.tables.filter(t => !t.side).map(t => tableCard(t, s, q, book)).join('');
+    const side = s.tables.filter(t => t.side).map(t => tableCard(t, s, q, book)).filter(Boolean);
     const aux = side.length ? `<details class="aux"${q ? ' open' : ''}><summary>Cálculos auxiliares del Excel (${side.length}) <span class="sub">tablas de apoyo al lado de los movimientos, como los sobrantes</span></summary>${side.join('')}</details>` : '';
     const part = s.tables.length ? main + aux : rawCard(s, q);
     return part && q ? `<div class="label sheet-label">Hoja ${esc(s.name)}</div>${part}` : part;

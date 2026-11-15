@@ -1,29 +1,46 @@
 // Totales de arriba, resumen por tipo de acreditación y pestañas de archivo
-import { GROUPS } from './config.js';
+import { GROUPS, OPERATIVE } from './config.js';
 import { $, fill, clone, fmt, norm, num, pct, plural, pretty, sum, fileName, shortDate, weekday } from './utils.js';
-import { categoryRows, hospitalityRows, returnedTotal, returnedCol, colOf, columnSources, groupOf } from './excel.js';
+import { categoryRows, hospitalityRows, returnedTotal, returnedCol, colOf, columnSources, groupOf, extraRows } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
 // Categorías de la hoja CORTE FINAL
 const finalRows = books => categoryRows(books.find(b => b.kind === 'final'));
 
-// Producido por tipo: Montaje y Operación de la hoja FOLIOS OPERACION del Corte Final,
-// Hospitalidades de su propio Excel (como en las tarjetas por tipo) → [{ group, total, letter, where }]
+// Producido por tipo: Montaje, Desmontaje y Operación de la hoja FOLIOS OPERACION del Corte Final,
+// Hospitalidades de su propio Excel (como en las tarjetas por tipo). Operación se parte en primera producción
+// (PRODUCIDO − extras) y extras (TOTAL de las filas sin CATEGORIA); el staff de patrocinadores no está en FOLIOS
+// OPERACION, se toma de la hoja CORTE FINAL → [{ name, total, letter, where, sub }]
 function producedByGroup(final, hosp) {
-  const folios = columnSources(final, { p: /^PRODUCIDO$/ }).filter(s => norm(s.sheet) === 'FOLIOS OPERACION');
+  const folios = columnSources(final, { p: /^PRODUCIDO$/, t: /^TOTAL$/ }).filter(s => norm(s.sheet) === 'FOLIOS OPERACION');
   const hospSrc = columnSources(hosp, HOSP_COLS);
-  const totals = new Map(GROUPS.map(g => [g, 0]));
+  const t = { montaje: 0, desmontaje: 0, operacion: 0, extras: 0 }, seen = new Set();
   for (const table of final.sheets.find(s => norm(s.name) === 'FOLIOS OPERACION')?.tables ?? []) {
-    const col = colOf(table, /^PRODUCIDO$/), cat = colOf(table, /^CATEGORIA$/);
-    if (col) table.rows.forEach(row => {
-      const group = groupOf(cat ? row[cat.c] : '');
-      if (!group.book) totals.set(group, totals.get(group) + (num(row[col.c]) || 0));
+    const col = colOf(table, /^PRODUCIDO$/), total = colOf(table, /^TOTAL$/), cat = colOf(table, /^CATEGORIA$/);
+    if (!col) continue;
+    const extras = extraRows(table);
+    table.rows.forEach(row => {
+      const name = extras.get(row) ?? (cat ? norm(row[cat.c]) : ''), group = groupOf(name);
+      seen.add(norm(name));
+      if (group.book) return;
+      const key = group.pattern ? (/^DESMONTAJE/.test(norm(name)) ? 'desmontaje' : 'montaje') : 'operacion';
+      t[key] += num(row[col.c]) || 0;
+      if (key === 'operacion' && extras.has(row) && total) t.extras += num(row[total.c]) || 0;
     });
   }
-  totals.set(GROUPS.find(g => g.book), sum(hospitalityRows(hosp), 'p'));
-  return GROUPS.map(group => group.book
-    ? { group, total: totals.get(group), letter: letter(hospSrc, 'p'), where: `${fileName(hosp.url)} · hoja ${sheetsOf(hospSrc)} · TOTAL PRODUCIDO` }
-    : { group, total: totals.get(group), letter: letter(folios, 'p'), where: `${fileName(final.url)} · hoja ${sheetsOf(folios)} · PRODUCIDO` });
+  const cut = columnSources(final, FINAL_COLS);
+  const staff = sum(categoryRows(final).filter(r => !r.group.pattern && OPERATIVE.test(norm(r.cat)) && !seen.has(norm(r.cat))), 'p');
+  const fromFinal = (name, total, key = 'p', sub = false) =>
+    ({ name, total, sub, letter: letter(folios, key), where: `${fileName(final.url)} · hoja ${sheetsOf(folios)} · ${key === 'p' ? 'PRODUCIDO' : 'TOTAL'}` });
+  return [
+    fromFinal('Montaje', t.montaje),
+    fromFinal('Desmontaje', t.desmontaje),
+    { name: 'Hospitalidades', total: sum(hospitalityRows(hosp), 'p'), letter: letter(hospSrc, 'p'), where: `${fileName(hosp.url)} · hoja ${sheetsOf(hospSrc)} · TOTAL PRODUCIDO` },
+    fromFinal('Operación', t.operacion + staff),
+    fromFinal('Primera producción', t.operacion - t.extras, 'p', true),
+    fromFinal('Extras', t.extras, 't', true),
+    { name: 'Staff patrocinadores', total: staff, sub: true, letter: letter(cut, 'p'), where: `${fileName(final.url)} · hoja ${sheetsOf(cut)} · PRODUCIDO (staff, talento e invitados zona verde)` }
+  ];
 }
 
 // Columnas de la tabla principal de la hoja CORTE FINAL (Corte Final) y de la del Corte Hospitalidades
@@ -74,7 +91,7 @@ export function renderKpis(books) {
   const cut = columnSources(final, FINAL_COLS);
   const cats = `${plural(rows.length, 'categoría')} · ${headerOf(cut)}`;
   fill($('#kpis'), {
-    produced: fmt(sum(byGroup, 'total')),
+    produced: fmt(sum(byGroup.filter(g => !g.sub), 'total')),
     delivered: fmt(delivered),
     deliveredShare: `${pct(delivered, produced)} · ${letter(cut, 'e')} ÷ ${letter(cut, 'p')}`,
     leftover: fmt(leftover),
@@ -90,7 +107,7 @@ export function renderKpis(books) {
   const sources = {
     produced: [el('span', 'meta', 'Suma de lo producido de los 3 tipos de acreditación'),
       el('span', 'sheets', ...byGroup.map(g => Object.assign(
-        el('span', '', el('span', '', g.group.name), colTag(g.letter, ''), el('span', 'num', fmt(g.total))), { title: g.where })))],
+        el('span', '', el('span', g.sub ? 'sub' : '', g.name), colTag(g.letter, ''), el('span', g.sub ? 'num sub' : 'num', fmt(g.total))), { title: g.where })))],
     delivered: [trail(final, sheetsOf(cut), colTag(letter(cut, 'e'), COL_NAMES.e)), el('span', 'meta', cats)],
     leftover: [trail(final, sheetsOf(cut), colTag(letter(cut, 's'), COL_NAMES.s)),
       el('span', 'meta', '= ', colTag(letter(cut, 'w'), 'bodega'), ' + ', colTag(letter(cut, 'm'), 'módulo'), ` · ${plural(rows.length, 'categoría')}`)],
