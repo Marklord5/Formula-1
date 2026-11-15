@@ -11,6 +11,9 @@ export const FILES = [
 // Reporte del sistema de acreditación (solicitudes, asignaciones y escaneos). Se ve arriba como panorama global.
 export const GLOBAL = { name: 'Reporte Global', url: 'data/reporte-global.xlsx' };
 
+// Control de entregas en paquete: solo se lee su hoja REPORTE (franja debajo de los totales); el Excel completo se descarga
+export const PACKAGE = { name: 'Control Entregas Paquete', url: 'data/control-entregas-paquete.xlsx', sheet: /^REPORTE$/ };
+
 // Qué significa cada columna (aparece al pasar el mouse por el encabezado de la tabla)
 export const GLOSSARY = {
   'PRODUCIDO': 'Cuántas se imprimieron',

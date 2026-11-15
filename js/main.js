@@ -1,11 +1,11 @@
 // Punto de entrada: estado, navegación y carga de los Excel
-import { FILES, GLOBAL } from './config.js';
+import { FILES, GLOBAL, PACKAGE } from './config.js';
 import { $, fill, esc } from './utils.js';
 import { parseBook } from './excel.js';
 import { chartsHtml, initTooltip } from './charts.js';
 import { renderSheets, renderBody } from './sheets.js';
 import { renderGlobal, loadGlobal, globalBook } from './global.js';
-import { renderKpis, renderGroups, renderTrend, renderDistribution, renderTabs, renderDownloads } from './overview.js';
+import { renderKpis, renderGroups, renderTrend, renderDistribution, renderTabs, renderDownloads, renderPackage } from './overview.js';
 
 let books = [];
 const state = { file: 0, sheet: -1, query: '', all: false }; // sheet = hoja abierta (-1: ninguna)
@@ -103,8 +103,9 @@ function restoreFromHash() {
 async function start() {
   const urls = FILES.map(f => f.url);
   fill(document, { requiredFiles: urls.join(', ') });
-  renderDownloads([GLOBAL, ...FILES]);
+  renderDownloads([GLOBAL, ...FILES, PACKAGE]);
   const stamp = `?v=${Date.now()}`; // evita la caché al actualizar los Excel
+  renderPackage(PACKAGE, stamp); // va aparte: si falla, el resto del reporte sigue
   const global = loadGlobal(stamp);
   renderGlobal(global); // va aparte: si falla, el resto del reporte sigue
   try {
@@ -121,7 +122,7 @@ async function start() {
     bindEvents();
     fill(document, {
       readAt: `Leído ${new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}`,
-      source: `Fuente: ${[GLOBAL.url, ...urls].join(' · ')}`
+      source: `Fuente: ${[GLOBAL.url, ...urls, PACKAGE.url].join(' · ')}`
     });
     setStatus('ready');
   } catch (err) {

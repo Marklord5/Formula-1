@@ -19,6 +19,7 @@ data/corte-diario.xlsx   ← CORTE DIARIO DE ACREDITACIONES 2026
 data/devolucion.xlsx     ← DEVOLUCIÓN F1 2026
 data/corte-hospitalidades.xlsx ← CORTE HOSPITALIDADES F1-26
 data/corte-ecos.xlsx     ← CORTE ECOS 2026 (pases de estacionamiento y candados)
+data/control-entregas-paquete.xlsx ← CONTROL ENTREGAS PAQUETE (solo se lee la hoja REPORTE; se descarga completo)
 vendor/xlsx.full.min.js  ← lector de Excel (SheetJS)
 ```
 
@@ -47,6 +48,7 @@ Da doble clic en **`Abrir reporte.command`**: levanta un servidor local y abre e
 0. **Descargar los Excel**: un botón por archivo en el encabezado (sale de `FILES`; si agregas un Excel, aparece solo).
 0.5 **Panorama global del sistema** (lo primero al abrir, del Reporte Global): solicitudes (autorizadas/rechazadas), acreditaciones solicitadas en solicitudes autorizadas (TOTAL POR SOLICITANTE), asignadas (ESTATUS = ASIGNADO) y escaneos en accesos (% que PASA); gráficas de escaneos por día y resultado, top 6 accesos y top 6 categorías asignadas. Las hojas se encuentran por nombre (SOLICITUDES, ESCANEO, ASIGNADO) y las columnas por encabezado. Si este Excel falla, el resto del reporte sigue.
 1. **Totales** arriba: PRODUCIDO (suma de PRODUCIDO de la hoja FOLIOS OPERACION del Corte Final), TOTAL ACREDITACIONES y TOTAL SOBRANTE (suma de esas columnas de la hoja CORTE FINAL) y Devueltos (suma de CANTIDAD del Excel de devolución).
+1.5 **Entregas en paquete**: franja debajo de los totales con cada texto → número de la hoja REPORTE del Control Entregas Paquete (p. ej. PAQUETE OPERACIONES · TOTAL). No entra en los totales ni tiene pestaña; se puede descargar el Excel completo.
 2. **Por tipo de acreditación**: el Corte Final separado en Montaje y Desmontaje, Hospitalidades y Operación.
 3. **Paso 1 · Elige el Excel**: Corte Final, Corte Diario, Devolución, Corte Hospitalidades o Corte ECOS.
 4. **Paso 2 · Gráficas** del Excel elegido:

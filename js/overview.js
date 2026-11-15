@@ -188,6 +188,34 @@ export function renderDistribution(books) {
   }));
 }
 
+// Franja "Entregas en paquete": de la hoja REPORTE, cada texto con el número a su derecha (TOTAL → 3,222);
+// el primer texto suelto es el título. Si el Excel falla, solo esta franja lo dice.
+export async function renderPackage(file, stamp) {
+  const box = $('#package');
+  Object.assign($('#packageDownload'), { href: file.url, download: fileName(file.url), title: `Descargar ${fileName(file.url)}` });
+  try {
+    const res = await fetch(file.url + stamp);
+    if (!res.ok) throw new Error(`No encontré ${file.url}`);
+    const wb = XLSX.read(await res.arrayBuffer());
+    const name = wb.SheetNames.find(n => file.sheet.test(norm(n)));
+    if (!name) throw new Error('no tiene la hoja REPORTE');
+    const grid = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: null });
+    let title = '';
+    const items = [];
+    grid.forEach((row, r) => row.forEach((v, c) => {
+      if (typeof v !== 'string' || !v.trim()) return;
+      const n = row.slice(c + 1).find(x => x != null && x !== '');
+      if (typeof n === 'number') items.push({ label: v.trim(), value: n, cell: XLSX.utils.encode_cell({ r, c: c + 1 + row.slice(c + 1).indexOf(n) }) });
+      else if (!title && !row.slice(0, c).some(x => typeof x === 'string')) title = v.trim();
+    }));
+    fill(box, { title: pretty(title || file.name) });
+    $('#packageItems').replaceChildren(...items.map(i => el('div', '', el('span', 'label', pretty(i.label)), el('span', 'kpi-val violet', fmt(i.value)))));
+    $('#src-package').replaceChildren(trail(file, name, el('span', '', ...items.map(i => colTag(i.cell, ` ${pretty(i.label)}`)))));
+  } catch (err) {
+    fill(box, { title: `No pude leer ${file.name} (${err.message})` });
+  }
+}
+
 // Un botón de descarga por archivo (se pinta antes de leer los datos)
 export function renderDownloads(files) {
   $('#downloads').replaceChildren(...files.map(({ name, url }) => {
