@@ -346,6 +346,16 @@ footer { margin: 2.5rem 0 0; border-top: 1px solid var(--line); padding: 1.25rem
 footer { position: relative; border-top: 0 }
 footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: var(--checker) 0 0 / 6px 6px; opacity: .35 }
 /* ===== Responsive ===== */
+/* Panorama global (Reporte Global) */
+.global .grid { margin-top: 1rem }
+.global .kpi { cursor: default; min-height: 130px }
+.global[data-state="loading"] .kpi-val { opacity: .35 }
+.kpi-val.violet { color: #B7A2F5 }
+.c-alt { background: var(--c-alt) }
+.global-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; align-items: start }
+.global-charts .hb-row { grid-template-columns: minmax(90px, 150px) 1fr 56px }
+.global-charts .legend { margin-top: 1rem }
+
 @media (max-width: 1100px) { .s3 { grid-column: span 6 } }
 @media (max-width: 767px) {
   .wrap { padding: 0 1rem } .grid { gap: 1rem } .s3 { grid-column: span 12 }
@@ -354,7 +364,7 @@ footer::before { content: ''; position: absolute; left: 0; right: 0; top: 0; hei
   .downloads { justify-items: start } .download-list { justify-content: flex-start }
   .event { display: none }
   .race .c3, .race .c4 { display: none } /* pista corta: solo dos carritos */
-  .tabs, .steps, .groups, .overview { grid-template-columns: 1fr; gap: .5rem }
+  .tabs, .steps, .groups, .overview, .global-charts { grid-template-columns: 1fr; gap: .5rem }
   #donut svg { width: 220px; height: 220px }
   .charts { grid-template-columns: 1fr; gap: 1rem }
   .hb-row { grid-template-columns: 96px 1fr 52px; gap: .5rem }

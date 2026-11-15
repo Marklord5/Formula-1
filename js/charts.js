@@ -5,7 +5,8 @@ import { colOf, eachRow, isWarehouse, categoryRows, returnedCol, returnedProduce
 
 const DATE_WINDOW = 120 * DAY_MS;
 
-const CHARTS = { final: finalCharts, daily: dailyCharts, returns: returnCharts, hospitality: hospitalityCharts, ecos: ecosCharts };
+const CHARTS = { final: finalCharts, daily: dailyCharts, returns: returnCharts, hospitality: hospitalityCharts, ecos: ecosCharts,
+  global: () => card('Las gráficas del Reporte Global están arriba', 'Ve a <a href="#global">Panorama global del sistema</a>. Abajo están las tablas de resumen de cada hoja; los nombres de personas y los folios no se muestran.', '', '', 'wide') };
 export const chartsHtml = (book, options) => CHARTS[book.kind](book, options);
 
 /* ---------- piezas comunes ---------- */
@@ -17,7 +18,7 @@ const card = (title, how, body, extra = '', cls = '') => `<section class="card l
   <div class="head"><div><h2>${title}</h2><p class="how">${how}</p></div>${extra}</div>${body}</section>`;
 
 // Barras horizontales; cada fila: { label, value, tip, segs: [{ v, tone }] }. `max` permite compartir escala entre grupos.
-function hbars(rows, max = Math.max(...rows.map(r => sum(r.segs, 'v')), 1)) {
+export function hbars(rows, max = Math.max(...rows.map(r => sum(r.segs, 'v')), 1)) {
   return `<div class="hb">${rows.map(r => `<div class="hb-row" ${tipAttr(r.tip)}>
       <span class="hb-l">${esc(r.label)}</span>
       <span class="hb-t">${r.segs.filter(s => s.v > 0).map(s => `<i class="c-${s.tone}" style="width:${s.v / max * 100}%"></i>`).join('')}</span>
@@ -138,14 +139,7 @@ export function donutHtml(slices, total) {
 
 function finalCharts(book, { all }) {
   const rows = categoryRows(book).sort((a, b) => b.p - a.p);
-  const P = sum(rows, 'p'), E = sum(rows, 'e'), S = sum(rows, 's');
   const key = legend([['ent', 'Entregado'], ['sob', 'Sobrante']]);
-
-  const total = card('¿Cuánto se entregó de lo que se produjo?',
-    `Se produjeron <b>${fmt(P)}</b> acreditaciones: se entregaron <b>${fmt(E)}</b> (${pct(E, P)}) y sobraron <b>${fmt(S)}</b> (${pct(S, P)}).`,
-    `<div class="hb-t total" ${tipAttr(`<b>Total del corte</b>${tipRow('Producido', fmt(P))}${tipRow('Entregado', `${fmt(E)} (${pct(E, P)})`)}${tipRow('Sobrante', `${fmt(S)} (${pct(S, P)})`)}`)}>
-      <i class="c-ent" style="width:${E / (E + S) * 100}%"></i><i class="c-sob" style="width:${S / (E + S) * 100}%"></i></div>`,
-    key, 'wide');
 
   // Una sección por tipo de acreditación, todas con la misma escala
   const max = Math.max(...rows.map(r => r.e + r.s), 1);
@@ -165,7 +159,7 @@ function finalCharts(book, { all }) {
     'Cada barra es una categoría de la hoja CORTE FINAL, separadas por tipo de acreditación. La parte verde es lo entregado y la dorada lo que sobró. El número es lo producido.',
     sections + toggle, key, 'wide');
 
-  return total + bars;
+  return bars;
 }
 
 /* ---------- Corte Diario: entregas por día + quién recibió más ---------- */

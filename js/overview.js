@@ -1,21 +1,29 @@
 // Totales de arriba, resumen por tipo de acreditación y pestañas de archivo
 import { GROUPS } from './config.js';
 import { $, fill, clone, fmt, norm, num, pct, plural, pretty, sum, fileName, shortDate, weekday } from './utils.js';
-import { categoryRows, hospitalityRows, returnedTotal, returnedCol, colOf, columnSources } from './excel.js';
+import { categoryRows, hospitalityRows, returnedTotal, returnedCol, colOf, columnSources, groupOf } from './excel.js';
 import { dailyPoints, curveHtml, donutHtml } from './charts.js';
 
 // Categorías de la hoja CORTE FINAL
 const finalRows = books => categoryRows(books.find(b => b.kind === 'final'));
 
-// Suma de PRODUCIDO de la hoja FOLIOS OPERACION del Corte Final
-function foliosProduced(book) {
-  const sheet = book.sheets.find(s => norm(s.name) === 'FOLIOS OPERACION');
-  let total = 0;
-  for (const table of sheet?.tables ?? []) {
-    const col = colOf(table, /^PRODUCIDO$/);
-    if (col) table.rows.forEach(row => total += num(row[col.c]) || 0);
+// Producido por tipo: Montaje y Operación de la hoja FOLIOS OPERACION del Corte Final,
+// Hospitalidades de su propio Excel (como en las tarjetas por tipo) → [{ group, total, letter, where }]
+function producedByGroup(final, hosp) {
+  const folios = columnSources(final, { p: /^PRODUCIDO$/ }).filter(s => norm(s.sheet) === 'FOLIOS OPERACION');
+  const hospSrc = columnSources(hosp, HOSP_COLS);
+  const totals = new Map(GROUPS.map(g => [g, 0]));
+  for (const table of final.sheets.find(s => norm(s.name) === 'FOLIOS OPERACION')?.tables ?? []) {
+    const col = colOf(table, /^PRODUCIDO$/), cat = colOf(table, /^CATEGORIA$/);
+    if (col) table.rows.forEach(row => {
+      const group = groupOf(cat ? row[cat.c] : '');
+      if (!group.book) totals.set(group, totals.get(group) + (num(row[col.c]) || 0));
+    });
   }
-  return total;
+  totals.set(GROUPS.find(g => g.book), sum(hospitalityRows(hosp), 'p'));
+  return GROUPS.map(group => group.book
+    ? { group, total: totals.get(group), letter: letter(hospSrc, 'p'), where: `${fileName(hosp.url)} · hoja ${sheetsOf(hospSrc)} · TOTAL PRODUCIDO` }
+    : { group, total: totals.get(group), letter: letter(folios, 'p'), where: `${fileName(final.url)} · hoja ${sheetsOf(folios)} · PRODUCIDO` });
 }
 
 // Columnas de la tabla principal de la hoja CORTE FINAL (Corte Final) y de la del Corte Hospitalidades
@@ -60,13 +68,13 @@ function returnsBySheet(book) {
 
 export function renderKpis(books) {
   const final = books.find(b => b.kind === 'final'), returns = books.find(b => b.kind === 'returns'), rows = finalRows(books);
+  const byGroup = producedByGroup(final, books.find(b => b.kind === 'hospitality'));
   // Los % de entregado y sobrante siguen sobre lo producido de la hoja CORTE FINAL (entregado + sobrante = ese producido)
   const produced = sum(rows, 'p'), delivered = sum(rows, 'e'), leftover = sum(rows, 's');
-  const folios = columnSources(final, { p: /^PRODUCIDO$/ }).filter(s => norm(s.sheet) === 'FOLIOS OPERACION');
   const cut = columnSources(final, FINAL_COLS);
   const cats = `${plural(rows.length, 'categoría')} · ${headerOf(cut)}`;
   fill($('#kpis'), {
-    produced: fmt(foliosProduced(final)),
+    produced: fmt(sum(byGroup, 'total')),
     delivered: fmt(delivered),
     deliveredShare: `${pct(delivered, produced)} · ${letter(cut, 'e')} ÷ ${letter(cut, 'p')}`,
     leftover: fmt(leftover),
@@ -80,8 +88,9 @@ export function renderKpis(books) {
 
   const byReturn = returnsBySheet(returns), returnCols = [...new Set(byReturn.map(r => r.name))].join(' / ');
   const sources = {
-    produced: [trail(final, sheetsOf(folios), colTag(letter(folios, 'p'), 'PRODUCIDO')),
-      el('span', 'meta', `${plural(sum(folios, 'rows'), 'fila')} sumadas · ${headerOf(folios)}`)],
+    produced: [el('span', 'meta', 'Suma de lo producido de los 3 tipos de acreditación'),
+      el('span', 'sheets', ...byGroup.map(g => Object.assign(
+        el('span', '', el('span', '', g.group.name), colTag(g.letter, ''), el('span', 'num', fmt(g.total))), { title: g.where })))],
     delivered: [trail(final, sheetsOf(cut), colTag(letter(cut, 'e'), COL_NAMES.e)), el('span', 'meta', cats)],
     leftover: [trail(final, sheetsOf(cut), colTag(letter(cut, 's'), COL_NAMES.s)),
       el('span', 'meta', '= ', colTag(letter(cut, 'w'), 'bodega'), ' + ', colTag(letter(cut, 'm'), 'módulo'), ` · ${plural(rows.length, 'categoría')}`)],

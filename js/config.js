@@ -8,6 +8,9 @@ export const FILES = [
   { kind: 'ecos', name: 'Corte ECOS', url: 'data/corte-ecos.xlsx' }
 ];
 
+// Reporte del sistema de acreditación (solicitudes, asignaciones y escaneos). Se ve arriba como panorama global.
+export const GLOBAL = { name: 'Reporte Global', url: 'data/reporte-global.xlsx' };
+
 // Qué significa cada columna (aparece al pasar el mouse por el encabezado de la tabla)
 export const GLOSSARY = {
   'PRODUCIDO': 'Cuántas se imprimieron',

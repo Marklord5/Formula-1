@@ -187,7 +187,7 @@ function readMeta(g, rows, h) {
       continue;
     }
     if (expectFolio) { if (!meta.folios.includes(v)) meta.folios.push(v); expectFolio = false; continue; }
-    if (FILLER.test(norm(v))) continue;
+    if (FILLER.test(norm(v)) || /^(SOLICITANTE|RESPONSABLE)\b/.test(norm(v))) continue; // nombres: dato sensible
     if (!meta.title && v !== '✅') meta.title = v;
     else if (!meta.notes.includes(v)) meta.notes.push(v);
   }

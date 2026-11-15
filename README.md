@@ -6,12 +6,14 @@ Reporte web de una sola página (`index.html`) que lee **directamente los Excel*
 index.html               ← estructura de la página (HTML + plantillas)
 css/styles.css           ← todo el estilo
 js/config.js             ← archivos, tipos de acreditación y glosario (lo único que se ajusta)
+js/global.js             ← panorama global del sistema (Reporte Global)
 js/main.js               ← carga de los Excel, estado y eventos
 js/excel.js              ← lectura de hojas y tablas; reglas de BODEGA y extras
 js/overview.js           ← totales, resumen por tipo y pestañas
 js/charts.js             ← gráficas de cada Excel
 js/sheets.js             ← tarjetas de hoja, búsqueda y desglose
 js/utils.js              ← formato, fechas y helpers del DOM
+data/reporte-global.xlsx ← REPORTE GLOBAL del sistema (solicitudes, asignado, escaneos)
 data/corte-final.xlsx    ← CORTE FINAL F1-2026
 data/corte-diario.xlsx   ← CORTE DIARIO DE ACREDITACIONES 2026
 data/devolucion.xlsx     ← DEVOLUCIÓN F1 2026
@@ -43,6 +45,7 @@ Da doble clic en **`Abrir reporte.command`**: levanta un servidor local y abre e
 ## Cómo está organizada la página
 
 0. **Descargar los Excel**: un botón por archivo en el encabezado (sale de `FILES`; si agregas un Excel, aparece solo).
+0.5 **Panorama global del sistema** (lo primero al abrir, del Reporte Global): solicitudes (autorizadas/rechazadas), acreditaciones solicitadas en solicitudes autorizadas (TOTAL POR SOLICITANTE), asignadas (ESTATUS = ASIGNADO) y escaneos en accesos (% que PASA); gráficas de escaneos por día y resultado, top 6 accesos y top 6 categorías asignadas. Las hojas se encuentran por nombre (SOLICITUDES, ESCANEO, ASIGNADO) y las columnas por encabezado. Si este Excel falla, el resto del reporte sigue.
 1. **Totales** arriba: PRODUCIDO (suma de PRODUCIDO de la hoja FOLIOS OPERACION del Corte Final), TOTAL ACREDITACIONES y TOTAL SOBRANTE (suma de esas columnas de la hoja CORTE FINAL) y Devueltos (suma de CANTIDAD del Excel de devolución).
 2. **Por tipo de acreditación**: el Corte Final separado en Montaje y Desmontaje, Hospitalidades y Operación.
 3. **Paso 1 · Elige el Excel**: Corte Final, Corte Diario, Devolución, Corte Hospitalidades o Corte ECOS.

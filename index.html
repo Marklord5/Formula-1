@@ -65,32 +65,47 @@
     </div>
   </div>
 
+  <section class="global" id="global" data-state="loading">
+    <div class="section-title"><h2>Panorama global del sistema</h2><span class="sub">Del Excel Reporte Global · solicitudes, asignaciones y escaneos</span></div>
+    <div class="grid">
+      <div class="card kpi s3"><span class="label">Solicitudes</span><span class="kpi-val" data-f="requests">—</span>
+        <span class="foot"><span class="chip green" data-f="authorized"></span><span data-f="rejected"></span></span></div>
+      <div class="card kpi s3"><span class="label">Acreditaciones solicitadas</span><span class="kpi-val cyan" data-f="requested">—</span>
+        <span class="foot"><span class="chip slate">En solicitudes autorizadas</span></span></div>
+      <div class="card kpi s3"><span class="label">Acreditaciones asignadas</span><span class="kpi-val violet" data-f="assigned">—</span>
+        <span class="foot"><span class="chip slate" data-f="modules"></span><span>a una persona</span></span></div>
+      <div class="card kpi s3"><span class="label">Escaneos en accesos</span><span class="kpi-val amber" data-f="scans">—</span>
+        <span class="foot"><span class="chip green" data-f="passShare"></span><span data-f="folios"></span></span></div>
+    </div>
+    <div class="global-charts" id="globalCharts"><section class="card lg"><div class="empty">Leyendo el Reporte Global…</div></section></div>
+  </section>
+
   <div class="steps">
     <div class="step"><b>1</b><div><strong>Elige un Excel</strong><span>Corte Final, Corte Diario, Devolución, Corte Hospitalidades o Corte ECOS.</span></div></div>
     <div class="step"><b>2</b><div><strong>Mira las gráficas</strong><span>Pasa el mouse sobre una barra para ver el detalle.</span></div></div>
-    <div class="step"><b>3</b><div><strong>Abre una hoja o busca</strong><span>Dale clic a la tarjeta de una hoja para ver sus tablas, o busca un nombre, folio o área.</span></div></div>
+    <div class="step"><b>3</b><div><strong>Abre una hoja o busca</strong><span>Dale clic a la tarjeta de una hoja para ver sus tablas, o busca una categoría o área.</span></div></div>
   </div>
 
   <section class="grid" id="kpis">
     <button class="card hover kpi s3" data-file="final">
-      <span class="label">Producido · Folios Operación</span>
+      <span class="label">Acreditaciones producidas</span>
       <span><span class="kpi-val" data-f="produced"></span><span class="src" id="src-produced"></span></span>
       <span class="foot"><span class="chip slate">Lo que se imprimió</span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
-      <span class="label">Total acreditaciones</span>
+      <span class="label">Acreditaciones entregadas</span>
       <span><span class="kpi-val cyan" data-f="delivered"></span><span class="src" id="src-delivered"></span></span>
       <span class="foot"><span class="chip green" data-f="deliveredShare"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="final">
-      <span class="label">Total sobrante</span>
+      <span class="label">Sobrantes · no se entregaron</span>
       <span><span class="kpi-val amber" data-f="leftover"></span><span class="src" id="src-leftover"></span></span>
       <span class="foot"><span class="chip amber" data-f="leftoverShare"></span><span>Ver Excel →</span></span>
     </button>
     <button class="card hover kpi s3" data-file="returns">
-      <span class="label">Devueltos</span>
+      <span class="label">Devueltas a acreditaciones</span>
       <span><span class="kpi-val red" data-f="returned"></span><span class="src" id="src-returned"></span></span>
-      <span class="foot"><span class="chip red">Sin tablas de resumen</span><span>Ver Excel →</span></span>
+      <span class="foot"><span class="chip red">Suma de las hojas de devolución</span><span>Ver Excel →</span></span>
     </button>
   </section>
 
@@ -129,7 +144,7 @@
   <div class="toolbar">
     <div class="label" id="sheetInfo"></div>
     <div class="right">
-      <input type="search" id="query" placeholder="Buscar nombre, folio, área…" aria-label="Buscar en este Excel">
+      <input type="search" id="query" placeholder="Buscar categoría, área…" aria-label="Buscar en este Excel">
       <a class="btn" id="download" download>
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Descargar este Excel
       </a>

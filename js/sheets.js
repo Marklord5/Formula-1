@@ -5,10 +5,14 @@ import { colOf, cellText, isWarehouse, sheetGroup, extraRows, returnedCol, retur
 
 /* ---------- búsqueda ---------- */
 
+// Datos sensibles que no se muestran ni se buscan: nombres de personas (OBSERVACIONES también los trae) y folios entregados
+const SENSITIVE = /^(SOLICITANTE|RESPONSABLE|OBSERVACIONES|FOLIOS?( INICIAL| FINAL)?|F\. ?(INICIAL|FINAL))$/;
+const visibleCols = table => table.cols.filter(c => !SENSITIVE.test(norm(c.name)));
+
 // Filas que coinciden con la búsqueda (si coincide el título del bloque, se muestran todas)
 const matchRows = (table, q) => !q || norm(table.meta.title).includes(q)
   ? table.rows
-  : table.rows.filter(row => norm(table.cols.map(col => cellText(row[col.c], col)).join(' ')).includes(q));
+  : table.rows.filter(row => norm(visibleCols(table).map(col => cellText(row[col.c], col)).join(' ')).includes(q));
 
 const matchRaw = (sheet, q) => sheet.raw.filter(row => !q || norm(row.join(' ')).includes(q));
 
@@ -59,6 +63,7 @@ function sheetSummary(sheet, isReturns) {
 
 // Cifra principal de la tarjeta según lo que tenga la hoja
 function headline(sheet, s) {
+  if (sheet.headline) return { ...sheet.headline }; // hojas armadas a mano (Reporte Global)
   if (!sheet.tables.length) {
     const items = sheet.free?.items ?? [];
     return items.length
@@ -138,7 +143,7 @@ function ownTotal(table) {
 function tableCard(table, sheet, q) {
   const rows = matchRows(table, q);
   if (!rows.length && (q || table.rows.length)) return '';
-  const { meta, cols } = table;
+  const { meta } = table, cols = visibleCols(table);
   const solCol = colOf(table, /^SOLICITANTE$/), catCol = colOf(table, /^CATEGORIA$/);
   const inWarehouse = row => solCol && isWarehouse(row[solCol.c]);
   const extras = extraRows(table);
@@ -149,7 +154,6 @@ function tableCard(table, sheet, q) {
     ...meta.nums.map(n => `<span class="chip cyan">Producido ${fmt(n)}</span>`),
     ...(rows.some(inWarehouse) ? ['<span class="chip warehouse">Filas BODEGA = quedaron en bodega, no acreditadas</span>'] : []),
     ...(rows.some(r => extras.has(r)) ? ['<span class="chip extra">Extra = rango de folios adicional (otra producción) de la categoría de arriba</span>'] : []),
-    ...meta.folios.map(f => `<span class="chip slate mono">Folios ${esc(f)}</span>`),
     ...meta.notes.map(n => n === '✅' ? '<span class="chip green">✅ Completo</span>' : `<span class="chip amber">${esc(n)}</span>`)
   ].join('');
   const firstText = cols.find(c => !c.n && !c.date && !c.code);

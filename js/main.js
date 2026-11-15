@@ -1,9 +1,10 @@
 // Punto de entrada: estado, navegación y carga de los Excel
-import { FILES } from './config.js';
+import { FILES, GLOBAL } from './config.js';
 import { $, fill, esc } from './utils.js';
 import { parseBook } from './excel.js';
 import { chartsHtml, initTooltip } from './charts.js';
 import { renderSheets, renderBody } from './sheets.js';
+import { renderGlobal, loadGlobal, globalBook } from './global.js';
 import { renderKpis, renderGroups, renderTrend, renderDistribution, renderTabs, renderDownloads } from './overview.js';
 
 let books = [];
@@ -102,10 +103,15 @@ function restoreFromHash() {
 async function start() {
   const urls = FILES.map(f => f.url);
   fill(document, { requiredFiles: urls.join(', ') });
-  renderDownloads(FILES);
+  renderDownloads([GLOBAL, ...FILES]);
+  const stamp = `?v=${Date.now()}`; // evita la caché al actualizar los Excel
+  const global = loadGlobal(stamp);
+  renderGlobal(global); // va aparte: si falla, el resto del reporte sigue
   try {
-    const stamp = `?v=${Date.now()}`; // evita la caché al actualizar los Excel
     books = await Promise.all(FILES.map(file => loadBook(file, stamp)));
+    // Reporte Global como última pestaña (al final, para no mover los #archivo/hoja guardados)
+    const wb = await global;
+    if (!(wb instanceof Error)) try { books.push(globalBook(wb)); } catch (err) { console.error(err); }
     restoreFromHash();
     renderKpis(books);
     renderGroups(books);
@@ -115,7 +121,7 @@ async function start() {
     bindEvents();
     fill(document, {
       readAt: `Leído ${new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}`,
-      source: `Fuente: ${urls.join(' · ')}`
+      source: `Fuente: ${[GLOBAL.url, ...urls].join(' · ')}`
     });
     setStatus('ready');
   } catch (err) {
