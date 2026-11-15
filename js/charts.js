@@ -139,14 +139,18 @@ export function donutHtml(slices, total) {
 
 function finalCharts(book, { all }) {
   const rows = categoryRows(book).sort((a, b) => b.p - a.p);
-  const key = legend([['ent', 'Entregado'], ['sob', 'Sobrante']]);
+  const key = legend([['ent', 'Entregado'], ['sob', 'Sobrante bodega'], ['mod', 'Sobrante módulo']]);
 
-  // Una sección por tipo de acreditación, todas con la misma escala
+  // Una sección por tipo de acreditación, todas con la misma escala. El sobrante se parte en bodega y módulo
+  // (lo que el TOTAL SOBRANTE no explique con SOBRANTE MODULO se queda como bodega, para que la barra siga sumando igual)
   const max = Math.max(...rows.map(r => r.e + r.s), 1);
-  const bar = r => ({
-    label: r.cat, value: fmt(r.p), segs: [{ v: r.e, tone: 'ent' }, { v: r.s, tone: 'sob' }],
-    tip: `<b>${esc(r.cat)}</b>${tipRow('Producido', fmt(r.p))}${tipRow('Entregado', `${fmt(r.e)} (${pct(r.e, r.p)})`)}${tipRow('Sobrante', `${fmt(r.s)} (${pct(r.s, r.p)})`)}`
-  });
+  const bar = r => {
+    const mod = Math.min(r.m, r.s), wh = r.s - mod;
+    return {
+      label: r.cat, value: fmt(r.p), segs: [{ v: r.e, tone: 'ent' }, { v: wh, tone: 'sob' }, { v: mod, tone: 'mod' }],
+      tip: `<b>${esc(r.cat)}</b>${tipRow('Producido', fmt(r.p))}${tipRow('Entregado', `${fmt(r.e)} (${pct(r.e, r.p)})`)}${tipRow('Sobrante bodega', `${fmt(wh)} (${pct(wh, r.p)})`)}${tipRow('Sobrante módulo', `${fmt(mod)} (${pct(mod, r.p)})`)}`
+    };
+  };
   const byGroup = GROUPS.map(group => ({ group, own: rows.filter(r => r.group === group) })).filter(g => g.own.length);
   const sections = byGroup.map(({ group, own }) => {
     const shown = all ? own : own.slice(0, TOP_PER_GROUP), hidden = own.length - shown.length;
@@ -156,7 +160,7 @@ function finalCharts(book, { all }) {
   const toggle = byGroup.some(g => g.own.length > TOP_PER_GROUP)
     ? `<button class="btn more" data-all>${all ? `Ver solo las ${TOP_PER_GROUP} principales de cada tipo` : `Ver las ${rows.length} categorías`}</button>` : '';
   const bars = card('Entregado y sobrante por categoría',
-    'Cada barra es una categoría de la hoja CORTE FINAL, separadas por tipo de acreditación. La parte verde es lo entregado y la dorada lo que sobró. El número es lo producido.',
+    'Cada barra es una categoría de la hoja CORTE FINAL, separadas por tipo de acreditación. La parte verde es lo entregado, la dorada lo que sobró en bodega y la violeta lo que sobró en los módulos. El número es lo producido.',
     sections + toggle, key, 'wide');
 
   return bars;

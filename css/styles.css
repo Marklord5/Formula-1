@@ -5,7 +5,7 @@
   --line: rgba(255,255,255,.07); --line-2: rgba(255,255,255,.06); --line-cyan: rgba(0,210,190,.12);
   --cyan: #00D2BE; --cyan-hi: #46EFDA; --red: #E10600; --red-ink: #FF8A7A; --amber: #FFB800; --green: #00E676;
   /* Series de las gráficas (validadas sobre #121824 para daltonismo, ΔE ≥ 8) */
-  --c-ent: #00A898; --c-sob: #B98A1E; --c-dev: #D95F4E; --c-alt: #9575E8;
+  --c-ent: #00A898; --c-sob: #B98A1E; --c-dev: #D95F4E; --c-alt: #9575E8; --c-mod: #9575E8;
   /* Detalles retro de carreras: pianos rojo/blanco y bandera a cuadros (pixel) */
   --curb: repeating-linear-gradient(90deg, var(--red) 0 8px, #E9ECF2 8px 16px);
   --checker: conic-gradient(#E9ECF2 25%, #0B0E14 0 50%, #E9ECF2 0 75%, #0B0E14 0);
@@ -244,6 +244,7 @@ mark { background: rgba(255,184,0,.3); color: inherit; border-radius: 2px }
 .how { margin-top: .35rem; color: var(--ink-2); font-size: 13px; line-height: 18px; max-width: 640px }
 .c-ent { background: var(--c-ent) }
 .c-sob { background: var(--c-sob) }
+.c-mod { background: var(--c-mod) }
 .c-dev { background: var(--c-dev) }
 .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 12px; color: var(--ink-2) }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: .4rem; vertical-align: -1px }
